@@ -89,3 +89,13 @@ which should return nothing (meaning the binary are the same).
 ```bash
 minipro -p AT28C64B -w blink
 ```
+
+
+#### Links
+- https://github.com/caseywdunn/eater_6502?tab=readme-ov-file
+- https://github.com/dbuchwald/6502/blob/master/Software/rom/04_blink_s/blink.s
+- https://github.com/sethm/symon
+- https://stackoverflow.com/questions/10595467/org-assembly-directive-and-location-counter-in-linker-script
+- https://cc65.github.io/doc/
+- https://www.tejotron.com/
+- https://www.reddit.com/r/beneater/comments/evis0o/6502_and_c_language/
