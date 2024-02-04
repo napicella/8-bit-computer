@@ -31,4 +31,35 @@ _Clock Module_
 ### Hello world
 The 8 bit computer running a simple program which turns on eight leds, first the ones in a even position and then the ones in a odd position, looping forever.
 
+Run:
+```
+python blink-leds.py
+```
+
+which generates the image for the ROM in the file `program.bin`.  
+Then connect the eeprom to the programmer and run:
+
+```
+minipro -p AT28C64B -w program.bin
+```
+
 ![](./imgs/leds.gif)
+
+
+---------------------
+## WIP
+
+### Upload to mini pro
+```bash
+vasm6502_oldstyle -Fbin -dotdir blink.s
+hexdump -C a.out
+minipro -p AT28C64B -w a.out
+```
+
+
+### Install cc65 compiler
+```
+git clone https://github.com/cc65/cc65.git
+cd cc65
+make
+```
