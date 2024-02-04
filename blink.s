@@ -1,19 +1,24 @@
-  .org $8000
+  .setcpu "65C02"
+  .segment "VECTORS"
 
-reset:
+  .word   $eaea
+  .word   init
+  .word   $eaea
+
+  .segment "CODE"
+
+init:
   lda #$ff
-  sta $6002
+  sta $8002
 
-  
-  lda #$50
-  sta $6000
+ loop: 
+  lda #$55
+  sta $8000
 
-loop:
-  ror
-  sta $6000
+  lda #$aa
+  sta $8000
 
   jmp loop
 
-  .org $fffc
-  .word reset
-  .word $0000
+
+  
