@@ -11,23 +11,25 @@ init:
   lda #$ff
   sta $8002
 
-loop:
-  jsr leds
-
-  jmp loop
-
-
-leds:
-  pha
+loop: 
   lda #$55
+  sta $0200
+
+  lda #$00
+
+  lda $0200 
   sta $8000
 
   lda #$aa
+  sta $0200
+
+  lda #$00
+
+  lda $0200
+
   sta $8000
 
-  pla
-  rts
-
+  jmp loop
 
 
   
