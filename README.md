@@ -99,3 +99,36 @@ minipro -p AT28C64B -w blink
 - https://cc65.github.io/doc/
 - https://www.tejotron.com/
 - https://www.reddit.com/r/beneater/comments/evis0o/6502_and_c_language/
+
+
+
+Push registers to stack: https://youtu.be/xBjQVxVxOxc?si=bFp7z4tenfyvrqtS&t=1049
+
+
+Install minipro
+```
+sudo apt-get install build-essential pkg-config git libusb-1.0-0-dev fakeroot debhelper dpkg-dev
+git clone https://gitlab.com/DavidGriffith/minipro.git
+cd minipro
+make
+sudo make install
+
+
+sudo usermod -a -G plugdev YOUR-USER
+```
+
+attach the programmer to the laptop. Run the minipro --version, you should minipro recognizing the device:
+```
+ pactvm > minipro --version
+Supported programmers: TL866A/CS, TL866II+,T48 (experimental)
+Found TL866II+ 04.2.132 (0x284)
+Device code: 02092661
+Serial code: 5BJVT6MR20ZZJBB0JPAE
+minipro version 0.6     A free and open TL866 series programmer
+Commit date:    2024-02-11 20:34:27 -0800
+Git commit:     77c26fd2e5d8674d65382a3eff4628013483c4d2
+Git branch:     master
+TL866A/CS:      14184 devices, 44 custom
+TL866II+:       16281 devices, 45 custom
+Logic:            283 devices, 4 custom
+```
