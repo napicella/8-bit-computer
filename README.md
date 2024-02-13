@@ -93,6 +93,9 @@ minipro -p AT28C64B -w blink
 
 #### Links
 - https://github.com/caseywdunn/eater_6502?tab=readme-ov-file
+- https://www.grappendorf.net/projects/6502-home-computer/software-development.html
+- https://www.masswerk.at/6502/6502_instruction_set.html#STA
+- https://cc65.github.io/doc/intro.html
 - https://github.com/dbuchwald/6502/blob/master/Software/rom/04_blink_s/blink.s
 - https://github.com/sethm/symon
 - https://stackoverflow.com/questions/10595467/org-assembly-directive-and-location-counter-in-linker-script
@@ -131,4 +134,42 @@ Git branch:     master
 TL866A/CS:      14184 devices, 44 custom
 TL866II+:       16281 devices, 45 custom
 Logic:            283 devices, 4 custom
+```
+
+
+### Disassemble
+```
+da65 --cpu 65C02 -g --comments 4 blink_subroutines | less
+
+```
+
+### Incremental levels of abstractions
+Before we start. 6502 reads from `0x1ffc` (low byte) and `0x1ffd` (high byte) the address where to read the first instruction. We need to write at that address where that is. In this project, the first instruction is
+at location 0 in the ROM, which is 0xE000 (1110000000000000) as seen by the CPU (see memory mapping)
+
+- `blink-leds.py` creates the binary by specifing the 6502 instructions in binary. No assembler.
+The program does not RAM. It blinks without a wait, so run it with a slow clock. The python script creates
+a binary that exactly fits the rom and sets the address `0x1ffc` and `0x1ffd` to 0xE000
+- `blink.s` it's the assembly version of the previous program. 
+- `ram_test.s` is the first program that needs a ram to be installed. It verfies the ram works by storing something in ram and reading it back
+- `blink_subroutines.s` runs the blink program with subroutines. This requires a ram since the `RTS` function (return sub routine) needs to know where to return to. This info is stored in the stack by the `JSR` (jump sub routine). The assemply also use `PHX` and `PLX` (push/pull x register to stack) to showcase how a subroutine can avoid interfere with registers being set outside of the subroutine.
+
+
+### How do hardware timer/time sleep works
+https://www.youtube.com/watch?v=g_koa00MBLg&ab_channel=BenEater
+
+
+
+### Compiling C
+```
+cp ~/github/cc65/lib/supervision.lib ~/github/8-bit-computer/leds_in_c/
+
+ca65 --cpu 65C02 io.s
+
+ca65 --cpu 65C02 crt0.s
+ar65 a supervision.lib crt0.o
+cc65 -t none --cpu 65C02 main.c
+ca65 --cpu 65C02 main.s
+ld65 -C load.cfg -o kernel.bin -vm crt0.o io.o main.o supervision.lib
+minipro -p AT28C64B -w kernel.bin
 ```

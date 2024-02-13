@@ -22,12 +22,33 @@ leds:
   lda #$55
   sta $8000
 
+  jsr WAIT
+
   lda #$aa
   sta $8000
+
+  jsr WAIT
 
   pla
   rts
 
 
+WAIT:
+  PHX
+  LDX #255        ; Set loop counter to 100
+WAIT_LOOP: 
+  JSR NOP_LOOP
+  DEX             ; Decrement X register
+  BNE WAIT_LOOP  ; Branch to LOOP if X is not zero
+  PLX
+  RTS             ; Return from subroutine
 
-  
+; Subroutine to run a loop with NOP operation
+NOP_LOOP:
+  PHX
+  LDX #255        ; Set loop counter to 100
+COUNT_LOOP: 
+  DEX             ; Decrement X register
+  BNE COUNT_LOOP  ; Branch to LOOP if X is not zero
+  PLX
+  RTS             ; Return from subroutine
