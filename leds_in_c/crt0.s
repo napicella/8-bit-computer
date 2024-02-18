@@ -1,12 +1,20 @@
-        .import _main
-        .import copydata
-        .import zerobss
-       
-        .export   __STARTUP__ : absolute = 1
+      .setcpu "65C02"
 
-        .segment "STARTUP"
+      .export __STARTUP__ : absolute = 1
+
+      .segment "VECTORS"
+
+      .word   $eaea
+      .word   init
+      .word   $eaea
+
+      .import _main
+
+      .segment "STARTUP"
+
 init:
-        jsr zerobss
-        jsr copydata
-        jsr _main
-        rts
+      cld
+      ldx #$ff
+      txs
+
+      jsr _main
