@@ -1,6 +1,6 @@
 ; da65 V2.19 - Git 3dfe03300
-; Created:    2024-02-18 21:42:12
-; Input file: kernel.bin
+; Created:    2024-02-23 12:30:25
+; Input file: blink_subroutines
 ; Page:       1
 
 
@@ -8,52 +8,40 @@
 
 ; ----------------------------------------------------------------------------
 ; ----------------------------------------------------------------------------
-        cld                                     ; E000 D8                       .
-        ldx     #$FF                            ; E001 A2 FF                    ..
-        txs                                     ; E003 9A                       .
-        jsr     LE1C3                           ; E004 20 C3 E1                  ..
-        nop                                     ; E007 EA                       .
-        nop                                     ; E008 EA                       .
-        nop                                     ; E009 EA                       .
-        nop                                     ; E00A EA                       .
-        nop                                     ; E00B EA                       .
-        nop                                     ; E00C EA                       .
-        nop                                     ; E00D EA                       .
-        nop                                     ; E00E EA                       .
-        nop                                     ; E00F EA                       .
-        nop                                     ; E010 EA                       .
-        nop                                     ; E011 EA                       .
-        nop                                     ; E012 EA                       .
-        nop                                     ; E013 EA                       .
-        nop                                     ; E014 EA                       .
-        nop                                     ; E015 EA                       .
-        nop                                     ; E016 EA                       .
-        nop                                     ; E017 EA                       .
-        nop                                     ; E018 EA                       .
-        nop                                     ; E019 EA                       .
-        nop                                     ; E01A EA                       .
-        nop                                     ; E01B EA                       .
-        nop                                     ; E01C EA                       .
-        nop                                     ; E01D EA                       .
-        nop                                     ; E01E EA                       .
-        nop                                     ; E01F EA                       .
-        nop                                     ; E020 EA                       .
-        nop                                     ; E021 EA                       .
-        nop                                     ; E022 EA                       .
-        nop                                     ; E023 EA                       .
-        nop                                     ; E024 EA                       .
-        nop                                     ; E025 EA                       .
-        nop                                     ; E026 EA                       .
-        nop                                     ; E027 EA                       .
-        nop                                     ; E028 EA                       .
-        nop                                     ; E029 EA                       .
-        nop                                     ; E02A EA                       .
-        nop                                     ; E02B EA                       .
-        nop                                     ; E02C EA                       .
-        nop                                     ; E02D EA                       .
-        nop                                     ; E02E EA                       .
-        nop                                     ; E02F EA                       .
-        nop                                     ; E030 EA                       .
+        lda     #$FF                            ; E000 A9 FF                    ..
+        sta     $8002                           ; E002 8D 02 80                 ...
+LE005:  jsr     LE00B                           ; E005 20 0B E0                  ..
+        jmp     LE005                           ; E008 4C 05 E0                 L..
+
+; ----------------------------------------------------------------------------
+LE00B:  pha                                     ; E00B 48                       H
+        lda     #$FF                            ; E00C A9 FF                    ..
+        sta     $8000                           ; E00E 8D 00 80                 ...
+        jsr     LE01E                           ; E011 20 1E E0                  ..
+        lda     #$00                            ; E014 A9 00                    ..
+        sta     $8000                           ; E016 8D 00 80                 ...
+        jsr     LE01E                           ; E019 20 1E E0                  ..
+        pla                                     ; E01C 68                       h
+        rts                                     ; E01D 60                       `
+
+; ----------------------------------------------------------------------------
+LE01E:  phx                                     ; E01E DA                       .
+        ldx     #$FF                            ; E01F A2 FF                    ..
+LE021:  jsr     LE029                           ; E021 20 29 E0                  ).
+        dex                                     ; E024 CA                       .
+        bne     LE021                           ; E025 D0 FA                    ..
+        plx                                     ; E027 FA                       .
+        rts                                     ; E028 60                       `
+
+; ----------------------------------------------------------------------------
+LE029:  phx                                     ; E029 DA                       .
+        ldx     #$FF                            ; E02A A2 FF                    ..
+LE02C:  dex                                     ; E02C CA                       .
+        bne     LE02C                           ; E02D D0 FD                    ..
+        plx                                     ; E02F FA                       .
+        rts                                     ; E030 60                       `
+
+; ----------------------------------------------------------------------------
         nop                                     ; E031 EA                       .
         nop                                     ; E032 EA                       .
         nop                                     ; E033 EA                       .
@@ -261,177 +249,279 @@
         nop                                     ; E0FD EA                       .
         nop                                     ; E0FE EA                       .
         nop                                     ; E0FF EA                       .
-LE100:  lda     #$FF                            ; E100 A9 FF                    ..
-        sta     $8002                           ; E102 8D 02 80                 ...
-        lda     #$FF                            ; E105 A9 FF                    ..
-        sta     $8000                           ; E107 8D 00 80                 ...
-        rts                                     ; E10A 60                       `
-
-; ----------------------------------------------------------------------------
-LE10B:  lda     #$AA                            ; E10B A9 AA                    ..
-        sta     $8000                           ; E10D 8D 00 80                 ...
-        rts                                     ; E110 60                       `
-
-; ----------------------------------------------------------------------------
-        ldx     #$00                            ; E111 A2 00                    ..
-        lda     #$00                            ; E113 A9 00                    ..
-        jsr     LE1FB                           ; E115 20 FB E1                  ..
-        ldx     #$00                            ; E118 A2 00                    ..
-        lda     #$00                            ; E11A A9 00                    ..
-        jsr     LE1FB                           ; E11C 20 FB E1                  ..
-        jmp     LE150                           ; E11F 4C 50 E1                 LP.
-
-; ----------------------------------------------------------------------------
-LE122:  ldy     #$02                            ; E122 A0 02                    ..
-        ldx     #$00                            ; E124 A2 00                    ..
-        lda     #$01                            ; E126 A9 01                    ..
-        jsr     LE1CC                           ; E128 20 CC E1                  ..
-        jmp     LE13A                           ; E12B 4C 3A E1                 L:.
-
-; ----------------------------------------------------------------------------
-LE12E:  ldy     #$00                            ; E12E A0 00                    ..
-        ldx     #$00                            ; E130 A2 00                    ..
-        lda     #$01                            ; E132 A9 01                    ..
-        jsr     LE1CC                           ; E134 20 CC E1                  ..
-        jsr     LE100                           ; E137 20 00 E1                  ..
-LE13A:  ldy     #$01                            ; E13A A0 01                    ..
-        jsr     LE1F0                           ; E13C 20 F0 E1                  ..
-        cmp     #$FF                            ; E13F C9 FF                    ..
-        txa                                     ; E141 8A                       .
-        sbc     #$00                            ; E142 E9 00                    ..
-        bvc     LE148                           ; E144 50 02                    P.
-        eor     #$80                            ; E146 49 80                    I.
-LE148:  asl     a                               ; E148 0A                       .
-        lda     #$00                            ; E149 A9 00                    ..
-        ldx     #$00                            ; E14B A2 00                    ..
-        rol     a                               ; E14D 2A                       *
-        bne     LE12E                           ; E14E D0 DE                    ..
-LE150:  ldy     #$03                            ; E150 A0 03                    ..
-        jsr     LE1F0                           ; E152 20 F0 E1                  ..
-        cmp     #$FF                            ; E155 C9 FF                    ..
-        txa                                     ; E157 8A                       .
-        sbc     #$00                            ; E158 E9 00                    ..
-        bvc     LE15E                           ; E15A 50 02                    P.
-        eor     #$80                            ; E15C 49 80                    I.
-LE15E:  asl     a                               ; E15E 0A                       .
-        lda     #$00                            ; E15F A9 00                    ..
-        ldx     #$00                            ; E161 A2 00                    ..
-        rol     a                               ; E163 2A                       *
-        bne     LE122                           ; E164 D0 BC                    ..
-        jsr     LE1E9                           ; E166 20 E9 E1                  ..
-        rts                                     ; E169 60                       `
-
-; ----------------------------------------------------------------------------
-        ldx     #$00                            ; E16A A2 00                    ..
-        lda     #$00                            ; E16C A9 00                    ..
-        jsr     LE1FB                           ; E16E 20 FB E1                  ..
-        ldx     #$00                            ; E171 A2 00                    ..
-        lda     #$00                            ; E173 A9 00                    ..
-        jsr     LE1FB                           ; E175 20 FB E1                  ..
-        jmp     LE1A9                           ; E178 4C A9 E1                 L..
-
-; ----------------------------------------------------------------------------
-LE17B:  ldy     #$02                            ; E17B A0 02                    ..
-        ldx     #$00                            ; E17D A2 00                    ..
-        lda     #$01                            ; E17F A9 01                    ..
-        jsr     LE1CC                           ; E181 20 CC E1                  ..
-        jmp     LE193                           ; E184 4C 93 E1                 L..
-
-; ----------------------------------------------------------------------------
-LE187:  ldy     #$00                            ; E187 A0 00                    ..
-        ldx     #$00                            ; E189 A2 00                    ..
-        lda     #$01                            ; E18B A9 01                    ..
-        jsr     LE1CC                           ; E18D 20 CC E1                  ..
-        jsr     LE10B                           ; E190 20 0B E1                  ..
-LE193:  ldy     #$01                            ; E193 A0 01                    ..
-        jsr     LE1F0                           ; E195 20 F0 E1                  ..
-        cmp     #$FF                            ; E198 C9 FF                    ..
-        txa                                     ; E19A 8A                       .
-        sbc     #$00                            ; E19B E9 00                    ..
-        bvc     LE1A1                           ; E19D 50 02                    P.
-        eor     #$80                            ; E19F 49 80                    I.
-LE1A1:  asl     a                               ; E1A1 0A                       .
-        lda     #$00                            ; E1A2 A9 00                    ..
-        ldx     #$00                            ; E1A4 A2 00                    ..
-        rol     a                               ; E1A6 2A                       *
-        bne     LE187                           ; E1A7 D0 DE                    ..
-LE1A9:  ldy     #$03                            ; E1A9 A0 03                    ..
-        jsr     LE1F0                           ; E1AB 20 F0 E1                  ..
-        cmp     #$FF                            ; E1AE C9 FF                    ..
-        txa                                     ; E1B0 8A                       .
-        sbc     #$00                            ; E1B1 E9 00                    ..
-        bvc     LE1B7                           ; E1B3 50 02                    P.
-        eor     #$80                            ; E1B5 49 80                    I.
-LE1B7:  asl     a                               ; E1B7 0A                       .
-        lda     #$00                            ; E1B8 A9 00                    ..
-        ldx     #$00                            ; E1BA A2 00                    ..
-        rol     a                               ; E1BC 2A                       *
-        bne     LE17B                           ; E1BD D0 BC                    ..
-        jsr     LE1E9                           ; E1BF 20 E9 E1                  ..
-        rts                                     ; E1C2 60                       `
-
-; ----------------------------------------------------------------------------
-LE1C3:  jsr     LE100                           ; E1C3 20 00 E1                  ..
-        jsr     LE10B                           ; E1C6 20 0B E1                  ..
-        rts                                     ; E1C9 60                       `
-
-; ----------------------------------------------------------------------------
-        ldy     #$00                            ; E1CA A0 00                    ..
-LE1CC:  clc                                     ; E1CC 18                       .
-        adc     ($00),y                         ; E1CD 71 00                    q.
-        sta     ($00),y                         ; E1CF 91 00                    ..
-        pha                                     ; E1D1 48                       H
-        iny                                     ; E1D2 C8                       .
-        txa                                     ; E1D3 8A                       .
-        adc     ($00),y                         ; E1D4 71 00                    q.
-        sta     ($00),y                         ; E1D6 91 00                    ..
-        tax                                     ; E1D8 AA                       .
-        pla                                     ; E1D9 68                       h
-        rts                                     ; E1DA 60                       `
-
-; ----------------------------------------------------------------------------
-        iny                                     ; E1DB C8                       .
-LE1DC:  pha                                     ; E1DC 48                       H
-        clc                                     ; E1DD 18                       .
-        tya                                     ; E1DE 98                       .
-        adc     $00                             ; E1DF 65 00                    e.
-        sta     $00                             ; E1E1 85 00                    ..
-        bcc     LE1E7                           ; E1E3 90 02                    ..
-        inc     $01                             ; E1E5 E6 01                    ..
-LE1E7:  pla                                     ; E1E7 68                       h
-        rts                                     ; E1E8 60                       `
-
-; ----------------------------------------------------------------------------
-LE1E9:  ldy     #$04                            ; E1E9 A0 04                    ..
-        jmp     LE1DC                           ; E1EB 4C DC E1                 L..
-
-; ----------------------------------------------------------------------------
-        ldy     #$01                            ; E1EE A0 01                    ..
-LE1F0:  lda     ($00),y                         ; E1F0 B1 00                    ..
-        tax                                     ; E1F2 AA                       .
-        dey                                     ; E1F3 88                       .
-        lda     ($00),y                         ; E1F4 B1 00                    ..
-        rts                                     ; E1F6 60                       `
-
-; ----------------------------------------------------------------------------
-        lda     #$00                            ; E1F7 A9 00                    ..
-        ldx     #$00                            ; E1F9 A2 00                    ..
-LE1FB:  pha                                     ; E1FB 48                       H
-        lda     $00                             ; E1FC A5 00                    ..
-        sec                                     ; E1FE 38                       8
-        sbc     #$02                            ; E1FF E9 02                    ..
-        sta     $00                             ; E201 85 00                    ..
-        bcs     LE207                           ; E203 B0 02                    ..
-        dec     $01                             ; E205 C6 01                    ..
-LE207:  ldy     #$01                            ; E207 A0 01                    ..
-        txa                                     ; E209 8A                       .
-        sta     ($00),y                         ; E20A 91 00                    ..
-        pla                                     ; E20C 68                       h
-        dey                                     ; E20D 88                       .
-        sta     ($00)                           ; E20E 92 00                    ..
-        rts                                     ; E210 60                       `
-
-; ----------------------------------------------------------------------------
+        nop                                     ; E100 EA                       .
+        nop                                     ; E101 EA                       .
+        nop                                     ; E102 EA                       .
+        nop                                     ; E103 EA                       .
+        nop                                     ; E104 EA                       .
+        nop                                     ; E105 EA                       .
+        nop                                     ; E106 EA                       .
+        nop                                     ; E107 EA                       .
+        nop                                     ; E108 EA                       .
+        nop                                     ; E109 EA                       .
+        nop                                     ; E10A EA                       .
+        nop                                     ; E10B EA                       .
+        nop                                     ; E10C EA                       .
+        nop                                     ; E10D EA                       .
+        nop                                     ; E10E EA                       .
+        nop                                     ; E10F EA                       .
+        nop                                     ; E110 EA                       .
+        nop                                     ; E111 EA                       .
+        nop                                     ; E112 EA                       .
+        nop                                     ; E113 EA                       .
+        nop                                     ; E114 EA                       .
+        nop                                     ; E115 EA                       .
+        nop                                     ; E116 EA                       .
+        nop                                     ; E117 EA                       .
+        nop                                     ; E118 EA                       .
+        nop                                     ; E119 EA                       .
+        nop                                     ; E11A EA                       .
+        nop                                     ; E11B EA                       .
+        nop                                     ; E11C EA                       .
+        nop                                     ; E11D EA                       .
+        nop                                     ; E11E EA                       .
+        nop                                     ; E11F EA                       .
+        nop                                     ; E120 EA                       .
+        nop                                     ; E121 EA                       .
+        nop                                     ; E122 EA                       .
+        nop                                     ; E123 EA                       .
+        nop                                     ; E124 EA                       .
+        nop                                     ; E125 EA                       .
+        nop                                     ; E126 EA                       .
+        nop                                     ; E127 EA                       .
+        nop                                     ; E128 EA                       .
+        nop                                     ; E129 EA                       .
+        nop                                     ; E12A EA                       .
+        nop                                     ; E12B EA                       .
+        nop                                     ; E12C EA                       .
+        nop                                     ; E12D EA                       .
+        nop                                     ; E12E EA                       .
+        nop                                     ; E12F EA                       .
+        nop                                     ; E130 EA                       .
+        nop                                     ; E131 EA                       .
+        nop                                     ; E132 EA                       .
+        nop                                     ; E133 EA                       .
+        nop                                     ; E134 EA                       .
+        nop                                     ; E135 EA                       .
+        nop                                     ; E136 EA                       .
+        nop                                     ; E137 EA                       .
+        nop                                     ; E138 EA                       .
+        nop                                     ; E139 EA                       .
+        nop                                     ; E13A EA                       .
+        nop                                     ; E13B EA                       .
+        nop                                     ; E13C EA                       .
+        nop                                     ; E13D EA                       .
+        nop                                     ; E13E EA                       .
+        nop                                     ; E13F EA                       .
+        nop                                     ; E140 EA                       .
+        nop                                     ; E141 EA                       .
+        nop                                     ; E142 EA                       .
+        nop                                     ; E143 EA                       .
+        nop                                     ; E144 EA                       .
+        nop                                     ; E145 EA                       .
+        nop                                     ; E146 EA                       .
+        nop                                     ; E147 EA                       .
+        nop                                     ; E148 EA                       .
+        nop                                     ; E149 EA                       .
+        nop                                     ; E14A EA                       .
+        nop                                     ; E14B EA                       .
+        nop                                     ; E14C EA                       .
+        nop                                     ; E14D EA                       .
+        nop                                     ; E14E EA                       .
+        nop                                     ; E14F EA                       .
+        nop                                     ; E150 EA                       .
+        nop                                     ; E151 EA                       .
+        nop                                     ; E152 EA                       .
+        nop                                     ; E153 EA                       .
+        nop                                     ; E154 EA                       .
+        nop                                     ; E155 EA                       .
+        nop                                     ; E156 EA                       .
+        nop                                     ; E157 EA                       .
+        nop                                     ; E158 EA                       .
+        nop                                     ; E159 EA                       .
+        nop                                     ; E15A EA                       .
+        nop                                     ; E15B EA                       .
+        nop                                     ; E15C EA                       .
+        nop                                     ; E15D EA                       .
+        nop                                     ; E15E EA                       .
+        nop                                     ; E15F EA                       .
+        nop                                     ; E160 EA                       .
+        nop                                     ; E161 EA                       .
+        nop                                     ; E162 EA                       .
+        nop                                     ; E163 EA                       .
+        nop                                     ; E164 EA                       .
+        nop                                     ; E165 EA                       .
+        nop                                     ; E166 EA                       .
+        nop                                     ; E167 EA                       .
+        nop                                     ; E168 EA                       .
+        nop                                     ; E169 EA                       .
+        nop                                     ; E16A EA                       .
+        nop                                     ; E16B EA                       .
+        nop                                     ; E16C EA                       .
+        nop                                     ; E16D EA                       .
+        nop                                     ; E16E EA                       .
+        nop                                     ; E16F EA                       .
+        nop                                     ; E170 EA                       .
+        nop                                     ; E171 EA                       .
+        nop                                     ; E172 EA                       .
+        nop                                     ; E173 EA                       .
+        nop                                     ; E174 EA                       .
+        nop                                     ; E175 EA                       .
+        nop                                     ; E176 EA                       .
+        nop                                     ; E177 EA                       .
+        nop                                     ; E178 EA                       .
+        nop                                     ; E179 EA                       .
+        nop                                     ; E17A EA                       .
+        nop                                     ; E17B EA                       .
+        nop                                     ; E17C EA                       .
+        nop                                     ; E17D EA                       .
+        nop                                     ; E17E EA                       .
+        nop                                     ; E17F EA                       .
+        nop                                     ; E180 EA                       .
+        nop                                     ; E181 EA                       .
+        nop                                     ; E182 EA                       .
+        nop                                     ; E183 EA                       .
+        nop                                     ; E184 EA                       .
+        nop                                     ; E185 EA                       .
+        nop                                     ; E186 EA                       .
+        nop                                     ; E187 EA                       .
+        nop                                     ; E188 EA                       .
+        nop                                     ; E189 EA                       .
+        nop                                     ; E18A EA                       .
+        nop                                     ; E18B EA                       .
+        nop                                     ; E18C EA                       .
+        nop                                     ; E18D EA                       .
+        nop                                     ; E18E EA                       .
+        nop                                     ; E18F EA                       .
+        nop                                     ; E190 EA                       .
+        nop                                     ; E191 EA                       .
+        nop                                     ; E192 EA                       .
+        nop                                     ; E193 EA                       .
+        nop                                     ; E194 EA                       .
+        nop                                     ; E195 EA                       .
+        nop                                     ; E196 EA                       .
+        nop                                     ; E197 EA                       .
+        nop                                     ; E198 EA                       .
+        nop                                     ; E199 EA                       .
+        nop                                     ; E19A EA                       .
+        nop                                     ; E19B EA                       .
+        nop                                     ; E19C EA                       .
+        nop                                     ; E19D EA                       .
+        nop                                     ; E19E EA                       .
+        nop                                     ; E19F EA                       .
+        nop                                     ; E1A0 EA                       .
+        nop                                     ; E1A1 EA                       .
+        nop                                     ; E1A2 EA                       .
+        nop                                     ; E1A3 EA                       .
+        nop                                     ; E1A4 EA                       .
+        nop                                     ; E1A5 EA                       .
+        nop                                     ; E1A6 EA                       .
+        nop                                     ; E1A7 EA                       .
+        nop                                     ; E1A8 EA                       .
+        nop                                     ; E1A9 EA                       .
+        nop                                     ; E1AA EA                       .
+        nop                                     ; E1AB EA                       .
+        nop                                     ; E1AC EA                       .
+        nop                                     ; E1AD EA                       .
+        nop                                     ; E1AE EA                       .
+        nop                                     ; E1AF EA                       .
+        nop                                     ; E1B0 EA                       .
+        nop                                     ; E1B1 EA                       .
+        nop                                     ; E1B2 EA                       .
+        nop                                     ; E1B3 EA                       .
+        nop                                     ; E1B4 EA                       .
+        nop                                     ; E1B5 EA                       .
+        nop                                     ; E1B6 EA                       .
+        nop                                     ; E1B7 EA                       .
+        nop                                     ; E1B8 EA                       .
+        nop                                     ; E1B9 EA                       .
+        nop                                     ; E1BA EA                       .
+        nop                                     ; E1BB EA                       .
+        nop                                     ; E1BC EA                       .
+        nop                                     ; E1BD EA                       .
+        nop                                     ; E1BE EA                       .
+        nop                                     ; E1BF EA                       .
+        nop                                     ; E1C0 EA                       .
+        nop                                     ; E1C1 EA                       .
+        nop                                     ; E1C2 EA                       .
+        nop                                     ; E1C3 EA                       .
+        nop                                     ; E1C4 EA                       .
+        nop                                     ; E1C5 EA                       .
+        nop                                     ; E1C6 EA                       .
+        nop                                     ; E1C7 EA                       .
+        nop                                     ; E1C8 EA                       .
+        nop                                     ; E1C9 EA                       .
+        nop                                     ; E1CA EA                       .
+        nop                                     ; E1CB EA                       .
+        nop                                     ; E1CC EA                       .
+        nop                                     ; E1CD EA                       .
+        nop                                     ; E1CE EA                       .
+        nop                                     ; E1CF EA                       .
+        nop                                     ; E1D0 EA                       .
+        nop                                     ; E1D1 EA                       .
+        nop                                     ; E1D2 EA                       .
+        nop                                     ; E1D3 EA                       .
+        nop                                     ; E1D4 EA                       .
+        nop                                     ; E1D5 EA                       .
+        nop                                     ; E1D6 EA                       .
+        nop                                     ; E1D7 EA                       .
+        nop                                     ; E1D8 EA                       .
+        nop                                     ; E1D9 EA                       .
+        nop                                     ; E1DA EA                       .
+        nop                                     ; E1DB EA                       .
+        nop                                     ; E1DC EA                       .
+        nop                                     ; E1DD EA                       .
+        nop                                     ; E1DE EA                       .
+        nop                                     ; E1DF EA                       .
+        nop                                     ; E1E0 EA                       .
+        nop                                     ; E1E1 EA                       .
+        nop                                     ; E1E2 EA                       .
+        nop                                     ; E1E3 EA                       .
+        nop                                     ; E1E4 EA                       .
+        nop                                     ; E1E5 EA                       .
+        nop                                     ; E1E6 EA                       .
+        nop                                     ; E1E7 EA                       .
+        nop                                     ; E1E8 EA                       .
+        nop                                     ; E1E9 EA                       .
+        nop                                     ; E1EA EA                       .
+        nop                                     ; E1EB EA                       .
+        nop                                     ; E1EC EA                       .
+        nop                                     ; E1ED EA                       .
+        nop                                     ; E1EE EA                       .
+        nop                                     ; E1EF EA                       .
+        nop                                     ; E1F0 EA                       .
+        nop                                     ; E1F1 EA                       .
+        nop                                     ; E1F2 EA                       .
+        nop                                     ; E1F3 EA                       .
+        nop                                     ; E1F4 EA                       .
+        nop                                     ; E1F5 EA                       .
+        nop                                     ; E1F6 EA                       .
+        nop                                     ; E1F7 EA                       .
+        nop                                     ; E1F8 EA                       .
+        nop                                     ; E1F9 EA                       .
+        nop                                     ; E1FA EA                       .
+        nop                                     ; E1FB EA                       .
+        nop                                     ; E1FC EA                       .
+        nop                                     ; E1FD EA                       .
+        nop                                     ; E1FE EA                       .
+        nop                                     ; E1FF EA                       .
+        nop                                     ; E200 EA                       .
+        nop                                     ; E201 EA                       .
+        nop                                     ; E202 EA                       .
+        nop                                     ; E203 EA                       .
+        nop                                     ; E204 EA                       .
+        nop                                     ; E205 EA                       .
+        nop                                     ; E206 EA                       .
+        nop                                     ; E207 EA                       .
+        nop                                     ; E208 EA                       .
+        nop                                     ; E209 EA                       .
+        nop                                     ; E20A EA                       .
+        nop                                     ; E20B EA                       .
+        nop                                     ; E20C EA                       .
+        nop                                     ; E20D EA                       .
+        nop                                     ; E20E EA                       .
+        nop                                     ; E20F EA                       .
+        nop                                     ; E210 EA                       .
         nop                                     ; E211 EA                       .
         nop                                     ; E212 EA                       .
         nop                                     ; E213 EA                       .

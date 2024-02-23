@@ -95,6 +95,8 @@ minipro -p AT28C64B -w blink
 - https://github.com/caseywdunn/eater_6502?tab=readme-ov-file
 - https://www.grappendorf.net/projects/6502-home-computer/software-development.html
 - https://www.masswerk.at/6502/6502_instruction_set.html#STA
+- https://github.com/peternoyes/dodo-sim
+- https://github.com/SleepingInsomniac/6502-Breadboard-Computer
 - https://cc65.github.io/doc/intro.html
 - https://forums.atariage.com/topic/296494-calling-asm-proc-from-c/
 - https://github.com/dbuchwald/6502/blob/master/Software/rom/04_blink_s/blink.s

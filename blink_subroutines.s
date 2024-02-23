@@ -19,12 +19,12 @@ loop:
 
 leds:
   pha
-  lda #$55
+  lda #$FF
   sta $8000
 
   jsr WAIT
 
-  lda #$aa
+  lda #$00
   sta $8000
 
   jsr WAIT

@@ -1,20 +1,53 @@
-      .setcpu "65C02"
+; ---------------------------------------------------------------------------
+; crt0.s
+; ---------------------------------------------------------------------------
+;
+; Startup code for cc65 (Single Board Computer version)
 
-      .export __STARTUP__ : absolute = 1
+.export   _init, _exit
+.import   _main
 
-      .segment "VECTORS"
+.export   __STARTUP__ : absolute = 1        ; Mark as startup
+.import   __RAM_START__, __RAM_SIZE__       ; Linker generated
 
-      .word   $eaea
-      .word   init
-      .word   $eaea
+.import    copydata, zerobss, initlib, donelib
 
-      .import _main
+.include  "zeropage.inc"
 
-      .segment "STARTUP"
+; ---------------------------------------------------------------------------
+; Place the startup code in a special segment
 
-init:
-      cld
-      ldx #$ff
-      txs
+.segment  "STARTUP"
 
-      jsr _main
+; ---------------------------------------------------------------------------
+; A little light 6502 housekeeping
+
+_init:    LDX     #$FF                 ; Initialize stack pointer to $FF
+          TXS
+          CLD                          ; Clear decimal mode
+
+; ---------------------------------------------------------------------------
+; Set cc65 argument stack pointer
+
+          LDA     #<(__RAM_START__ + __RAM_SIZE__)
+          STA     sp
+          LDA     #>(__RAM_START__ + __RAM_SIZE__)
+          STA     sp+1
+
+; ---------------------------------------------------------------------------
+; Initialize memory storage
+
+          JSR     zerobss              ; Clear BSS segment
+          JSR     copydata             ; Initialize DATA segment
+          JSR     initlib              ; Run constructors
+
+; ---------------------------------------------------------------------------
+; Call main()
+
+          JSR     _main
+
+; ---------------------------------------------------------------------------
+; Back from main (this is also the _exit entry):  force a software break
+
+_exit:    JSR     donelib              ; Run destructors
+          BRK

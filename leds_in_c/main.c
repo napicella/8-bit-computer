@@ -1,13 +1,32 @@
-void fastcall led();
-// void fastcall led_off();
+extern void __fastcall__  ledOff();
+extern void __fastcall__  ledOn();
 
+void spin() {
+    int i = 0;
+    int j = 0;
+    
+    while(i<255) {
+         i++;
+         while(j<255) {
+            j++;
+         }
+    }
 
-void main() {
-    // int i = 0;
-    led();
+    i = 0;
+    j = 0;
 
-    // while(i< 65000) {
-    //     i++;
-    // }
-    // led_off();
+    while(i<255) {
+         i++;
+         while(j<255) {
+            j++;
+         }
+    }
 }
+
+// This is the main function
+void main(void) {
+    ledOn();
+    spin();
+    ledOff();
+}
+
