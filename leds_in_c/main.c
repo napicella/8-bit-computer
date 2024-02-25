@@ -23,10 +23,18 @@ void spin() {
     }
 }
 
-// This is the main function
 void main(void) {
-    ledOn();
-    spin();
-    ledOff();
+    while(1==1) {
+        ledOn();
+        spin();
+        spin();
+        spin();
+        spin();
+        ledOff();
+        spin();
+        spin();
+        spin();
+        spin();
+    }
 }
 

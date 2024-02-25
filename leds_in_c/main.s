@@ -10,7 +10,7 @@
 	.importzp	sp, sreg, regsave, regbank
 	.importzp	tmp1, tmp2, tmp3, tmp4, ptr1, ptr2, ptr3, ptr4
 	.macpack	longbranch
-	.dbg		file, "main.c", 419, 1708698682
+	.dbg		file, "main.c", 567, 1708889737
 	.forceimport	__STARTUP__
 	.import		_ledOff
 	.import		_ledOn
@@ -149,12 +149,30 @@ L000D:	asl     a
 .segment	"CODE"
 
 	.dbg	line, "main.c", 28
-	jsr     _ledOn
+	jmp     L0004
 	.dbg	line, "main.c", 29
-	jsr     _spin
+L0002:	jsr     _ledOn
 	.dbg	line, "main.c", 30
-	jsr     _ledOff
+	jsr     _spin
 	.dbg	line, "main.c", 31
+	jsr     _spin
+	.dbg	line, "main.c", 32
+	jsr     _spin
+	.dbg	line, "main.c", 33
+	jsr     _spin
+	.dbg	line, "main.c", 34
+	jsr     _ledOff
+	.dbg	line, "main.c", 35
+	jsr     _spin
+	.dbg	line, "main.c", 36
+	jsr     _spin
+	.dbg	line, "main.c", 37
+	jsr     _spin
+	.dbg	line, "main.c", 38
+	jsr     _spin
+	.dbg	line, "main.c", 28
+L0004:	jmp     L0002
+	.dbg	line, "main.c", 40
 	rts
 
 	.dbg	line

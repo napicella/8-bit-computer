@@ -37,9 +37,9 @@ _init:    LDX     #$FF                 ; Initialize stack pointer to $FF
 ; ---------------------------------------------------------------------------
 ; Initialize memory storage
 
-          JSR     zerobss              ; Clear BSS segment
-          JSR     copydata             ; Initialize DATA segment
-          JSR     initlib              ; Run constructors
+          ;JSR     zerobss              ; Clear BSS segment
+          ;JSR     copydata             ; Initialize DATA segment
+          ;JSR     initlib              ; Run constructors
 
 ; ---------------------------------------------------------------------------
 ; Call main()

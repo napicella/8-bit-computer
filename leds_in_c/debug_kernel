@@ -1,5 +1,5 @@
 ; da65 V2.19 - Git 3dfe03300
-; Created:    2024-02-23 16:41:23
+; Created:    2024-02-23 18:26:38
 ; Input file: kernel.bin
 ; Page:       1
 
@@ -33,285 +33,323 @@ LE00C:  dey                                     ; E00C 88                       
         sta     $00                             ; E02B 85 00                    ..
         lda     #$80                            ; E02D A9 80                    ..
         sta     $01                             ; E02F 85 01                    ..
-        jsr     LE1BB                           ; E031 20 BB E1                  ..
-        jsr     LE15B                           ; E034 20 5B E1                  [.
-        jsr     LE041                           ; E037 20 41 E0                  A.
-        jsr     LE126                           ; E03A 20 26 E1                  &.
-        jsr     LE14F                           ; E03D 20 4F E1                  O.
-        brk                                     ; E040 00                       .
-LE041:  ldy     #$00                            ; E041 A0 00                    ..
-        beq     LE04C                           ; E043 F0 07                    ..
-        lda     #$41                            ; E045 A9 41                    .A
-        ldx     #$E0                            ; E047 A2 E0                    ..
-        jmp     L0200                           ; E049 4C 00 02                 L..
+        jsr     LE11D                           ; E031 20 1D E1                  ..
+        jsr     LE146                           ; E034 20 46 E1                  F.
+        brk                                     ; E037 00                       .
+        ldy     #$00                            ; E038 A0 00                    ..
+        beq     LE043                           ; E03A F0 07                    ..
+        lda     #$38                            ; E03C A9 38                    .8
+        ldx     #$E0                            ; E03E A2 E0                    ..
+        jmp     L0200                           ; E040 4C 00 02                 L..
 
 ; ----------------------------------------------------------------------------
-LE04C:  rts                                     ; E04C 60                       `
+LE043:  rts                                     ; E043 60                       `
 
 ; ----------------------------------------------------------------------------
-        rti                                     ; E04D 40                       @
+        rti                                     ; E044 40                       @
 
 ; ----------------------------------------------------------------------------
-        phx                                     ; E04E DA                       .
-        tsx                                     ; E04F BA                       .
-        pha                                     ; E050 48                       H
-        inx                                     ; E051 E8                       .
-        inx                                     ; E052 E8                       .
-        lda     $0100,x                         ; E053 BD 00 01                 ...
-        and     #$10                            ; E056 29 10                    ).
-        bne     LE05D                           ; E058 D0 03                    ..
-        pla                                     ; E05A 68                       h
-        plx                                     ; E05B FA                       .
-        rti                                     ; E05C 40                       @
+        phx                                     ; E045 DA                       .
+        tsx                                     ; E046 BA                       .
+        pha                                     ; E047 48                       H
+        inx                                     ; E048 E8                       .
+        inx                                     ; E049 E8                       .
+        lda     $0100,x                         ; E04A BD 00 01                 ...
+        and     #$10                            ; E04D 29 10                    ).
+        bne     LE054                           ; E04F D0 03                    ..
+        pla                                     ; E051 68                       h
+        plx                                     ; E052 FA                       .
+        rti                                     ; E053 40                       @
 
 ; ----------------------------------------------------------------------------
-LE05D:  jmp     LE063                           ; E05D 4C 63 E0                 Lc.
+LE054:  jmp     LE05A                           ; E054 4C 5A E0                 LZ.
 
 ; ----------------------------------------------------------------------------
-        cli                                     ; E060 58                       X
-        wai                                     ; E061 CB                       .
-        rts                                     ; E062 60                       `
+        cli                                     ; E057 58                       X
+        wai                                     ; E058 CB                       .
+        rts                                     ; E059 60                       `
 
 ; ----------------------------------------------------------------------------
-LE063:  stp                                     ; E063 DB                       .
-LE064:  lda     #$FF                            ; E064 A9 FF                    ..
-        sta     $8002                           ; E066 8D 02 80                 ...
-        lda     #$FF                            ; E069 A9 FF                    ..
-        sta     $8000                           ; E06B 8D 00 80                 ...
-        rts                                     ; E06E 60                       `
+LE05A:  stp                                     ; E05A DB                       .
+LE05B:  lda     #$FF                            ; E05B A9 FF                    ..
+        sta     $8002                           ; E05D 8D 02 80                 ...
+        lda     #$FF                            ; E060 A9 FF                    ..
+        sta     $8000                           ; E062 8D 00 80                 ...
+        rts                                     ; E065 60                       `
 
 ; ----------------------------------------------------------------------------
-LE06F:  lda     #$FF                            ; E06F A9 FF                    ..
-        sta     $8002                           ; E071 8D 02 80                 ...
-        lda     #$00                            ; E074 A9 00                    ..
-        sta     $8000                           ; E076 8D 00 80                 ...
-        rts                                     ; E079 60                       `
+LE066:  lda     #$FF                            ; E066 A9 FF                    ..
+        sta     $8002                           ; E068 8D 02 80                 ...
+        lda     #$00                            ; E06B A9 00                    ..
+        sta     $8000                           ; E06D 8D 00 80                 ...
+        rts                                     ; E070 60                       `
 
 ; ----------------------------------------------------------------------------
-LE07A:  ldx     #$00                            ; E07A A2 00                    ..
-        lda     #$00                            ; E07C A9 00                    ..
-        jsr     LE19A                           ; E07E 20 9A E1                  ..
-        ldx     #$00                            ; E081 A2 00                    ..
-        lda     #$00                            ; E083 A9 00                    ..
-        jsr     LE19A                           ; E085 20 9A E1                  ..
-        jmp     LE0B6                           ; E088 4C B6 E0                 L..
+LE071:  ldx     #$00                            ; E071 A2 00                    ..
+        lda     #$00                            ; E073 A9 00                    ..
+        jsr     LE164                           ; E075 20 64 E1                  d.
+        ldx     #$00                            ; E078 A2 00                    ..
+        lda     #$00                            ; E07A A9 00                    ..
+        jsr     LE164                           ; E07C 20 64 E1                  d.
+        jmp     LE0AD                           ; E07F 4C AD E0                 L..
 
 ; ----------------------------------------------------------------------------
-LE08B:  ldy     #$02                            ; E08B A0 02                    ..
-        ldx     #$00                            ; E08D A2 00                    ..
-        lda     #$01                            ; E08F A9 01                    ..
-        jsr     LE132                           ; E091 20 32 E1                  2.
-        jmp     LE0A0                           ; E094 4C A0 E0                 L..
+LE082:  ldy     #$02                            ; E082 A0 02                    ..
+        ldx     #$00                            ; E084 A2 00                    ..
+        lda     #$01                            ; E086 A9 01                    ..
+        jsr     LE129                           ; E088 20 29 E1                  ).
+        jmp     LE097                           ; E08B 4C 97 E0                 L..
 
 ; ----------------------------------------------------------------------------
-LE097:  ldy     #$00                            ; E097 A0 00                    ..
-        ldx     #$00                            ; E099 A2 00                    ..
-        lda     #$01                            ; E09B A9 01                    ..
-        jsr     LE132                           ; E09D 20 32 E1                  2.
-LE0A0:  ldy     #$01                            ; E0A0 A0 01                    ..
-        jsr     LE18F                           ; E0A2 20 8F E1                  ..
-        cmp     #$FF                            ; E0A5 C9 FF                    ..
-        txa                                     ; E0A7 8A                       .
-        sbc     #$00                            ; E0A8 E9 00                    ..
-        bvc     LE0AE                           ; E0AA 50 02                    P.
-        eor     #$80                            ; E0AC 49 80                    I.
-LE0AE:  asl     a                               ; E0AE 0A                       .
-        lda     #$00                            ; E0AF A9 00                    ..
-        ldx     #$00                            ; E0B1 A2 00                    ..
-        rol     a                               ; E0B3 2A                       *
-        bne     LE097                           ; E0B4 D0 E1                    ..
-LE0B6:  ldy     #$03                            ; E0B6 A0 03                    ..
-        jsr     LE18F                           ; E0B8 20 8F E1                  ..
-        cmp     #$FF                            ; E0BB C9 FF                    ..
-        txa                                     ; E0BD 8A                       .
-        sbc     #$00                            ; E0BE E9 00                    ..
-        bvc     LE0C4                           ; E0C0 50 02                    P.
-        eor     #$80                            ; E0C2 49 80                    I.
-LE0C4:  asl     a                               ; E0C4 0A                       .
+LE08E:  ldy     #$00                            ; E08E A0 00                    ..
+        ldx     #$00                            ; E090 A2 00                    ..
+        lda     #$01                            ; E092 A9 01                    ..
+        jsr     LE129                           ; E094 20 29 E1                  ).
+LE097:  ldy     #$01                            ; E097 A0 01                    ..
+        jsr     LE159                           ; E099 20 59 E1                  Y.
+        cmp     #$FF                            ; E09C C9 FF                    ..
+        txa                                     ; E09E 8A                       .
+        sbc     #$00                            ; E09F E9 00                    ..
+        bvc     LE0A5                           ; E0A1 50 02                    P.
+        eor     #$80                            ; E0A3 49 80                    I.
+LE0A5:  asl     a                               ; E0A5 0A                       .
+        lda     #$00                            ; E0A6 A9 00                    ..
+        ldx     #$00                            ; E0A8 A2 00                    ..
+        rol     a                               ; E0AA 2A                       *
+        bne     LE08E                           ; E0AB D0 E1                    ..
+LE0AD:  ldy     #$03                            ; E0AD A0 03                    ..
+        jsr     LE159                           ; E0AF 20 59 E1                  Y.
+        cmp     #$FF                            ; E0B2 C9 FF                    ..
+        txa                                     ; E0B4 8A                       .
+        sbc     #$00                            ; E0B5 E9 00                    ..
+        bvc     LE0BB                           ; E0B7 50 02                    P.
+        eor     #$80                            ; E0B9 49 80                    I.
+LE0BB:  asl     a                               ; E0BB 0A                       .
+        lda     #$00                            ; E0BC A9 00                    ..
+        ldx     #$00                            ; E0BE A2 00                    ..
+        rol     a                               ; E0C0 2A                       *
+        bne     LE082                           ; E0C1 D0 BF                    ..
+        ldx     #$00                            ; E0C3 A2 00                    ..
         lda     #$00                            ; E0C5 A9 00                    ..
-        ldx     #$00                            ; E0C7 A2 00                    ..
-        rol     a                               ; E0C9 2A                       *
-        bne     LE08B                           ; E0CA D0 BF                    ..
+        ldy     #$02                            ; E0C7 A0 02                    ..
+        jsr     LE17C                           ; E0C9 20 7C E1                  |.
         ldx     #$00                            ; E0CC A2 00                    ..
         lda     #$00                            ; E0CE A9 00                    ..
-        ldy     #$02                            ; E0D0 A0 02                    ..
-        jsr     LE1B2                           ; E0D2 20 B2 E1                  ..
-        ldx     #$00                            ; E0D5 A2 00                    ..
-        lda     #$00                            ; E0D7 A9 00                    ..
-        ldy     #$00                            ; E0D9 A0 00                    ..
-        jsr     LE1B2                           ; E0DB 20 B2 E1                  ..
-        jmp     LE10C                           ; E0DE 4C 0C E1                 L..
+        ldy     #$00                            ; E0D0 A0 00                    ..
+        jsr     LE17C                           ; E0D2 20 7C E1                  |.
+        jmp     LE103                           ; E0D5 4C 03 E1                 L..
 
 ; ----------------------------------------------------------------------------
-LE0E1:  ldy     #$02                            ; E0E1 A0 02                    ..
-        ldx     #$00                            ; E0E3 A2 00                    ..
-        lda     #$01                            ; E0E5 A9 01                    ..
-        jsr     LE132                           ; E0E7 20 32 E1                  2.
-        jmp     LE0F6                           ; E0EA 4C F6 E0                 L..
+LE0D8:  ldy     #$02                            ; E0D8 A0 02                    ..
+        ldx     #$00                            ; E0DA A2 00                    ..
+        lda     #$01                            ; E0DC A9 01                    ..
+        jsr     LE129                           ; E0DE 20 29 E1                  ).
+        jmp     LE0ED                           ; E0E1 4C ED E0                 L..
 
 ; ----------------------------------------------------------------------------
-LE0ED:  ldy     #$00                            ; E0ED A0 00                    ..
-        ldx     #$00                            ; E0EF A2 00                    ..
-        lda     #$01                            ; E0F1 A9 01                    ..
-        jsr     LE132                           ; E0F3 20 32 E1                  2.
-LE0F6:  ldy     #$01                            ; E0F6 A0 01                    ..
-        jsr     LE18F                           ; E0F8 20 8F E1                  ..
-        cmp     #$FF                            ; E0FB C9 FF                    ..
-        txa                                     ; E0FD 8A                       .
-        sbc     #$00                            ; E0FE E9 00                    ..
-        bvc     LE104                           ; E100 50 02                    P.
-        eor     #$80                            ; E102 49 80                    I.
-LE104:  asl     a                               ; E104 0A                       .
-        lda     #$00                            ; E105 A9 00                    ..
-        ldx     #$00                            ; E107 A2 00                    ..
-        rol     a                               ; E109 2A                       *
-        bne     LE0ED                           ; E10A D0 E1                    ..
-LE10C:  ldy     #$03                            ; E10C A0 03                    ..
-        jsr     LE18F                           ; E10E 20 8F E1                  ..
-        cmp     #$FF                            ; E111 C9 FF                    ..
-        txa                                     ; E113 8A                       .
-        sbc     #$00                            ; E114 E9 00                    ..
-        bvc     LE11A                           ; E116 50 02                    P.
-        eor     #$80                            ; E118 49 80                    I.
-LE11A:  asl     a                               ; E11A 0A                       .
-        lda     #$00                            ; E11B A9 00                    ..
-        ldx     #$00                            ; E11D A2 00                    ..
-        rol     a                               ; E11F 2A                       *
-        bne     LE0E1                           ; E120 D0 BF                    ..
-        jsr     LE188                           ; E122 20 88 E1                  ..
-        rts                                     ; E125 60                       `
+LE0E4:  ldy     #$00                            ; E0E4 A0 00                    ..
+        ldx     #$00                            ; E0E6 A2 00                    ..
+        lda     #$01                            ; E0E8 A9 01                    ..
+        jsr     LE129                           ; E0EA 20 29 E1                  ).
+LE0ED:  ldy     #$01                            ; E0ED A0 01                    ..
+        jsr     LE159                           ; E0EF 20 59 E1                  Y.
+        cmp     #$FF                            ; E0F2 C9 FF                    ..
+        txa                                     ; E0F4 8A                       .
+        sbc     #$00                            ; E0F5 E9 00                    ..
+        bvc     LE0FB                           ; E0F7 50 02                    P.
+        eor     #$80                            ; E0F9 49 80                    I.
+LE0FB:  asl     a                               ; E0FB 0A                       .
+        lda     #$00                            ; E0FC A9 00                    ..
+        ldx     #$00                            ; E0FE A2 00                    ..
+        rol     a                               ; E100 2A                       *
+        bne     LE0E4                           ; E101 D0 E1                    ..
+LE103:  ldy     #$03                            ; E103 A0 03                    ..
+        jsr     LE159                           ; E105 20 59 E1                  Y.
+        cmp     #$FF                            ; E108 C9 FF                    ..
+        txa                                     ; E10A 8A                       .
+        sbc     #$00                            ; E10B E9 00                    ..
+        bvc     LE111                           ; E10D 50 02                    P.
+        eor     #$80                            ; E10F 49 80                    I.
+LE111:  asl     a                               ; E111 0A                       .
+        lda     #$00                            ; E112 A9 00                    ..
+        ldx     #$00                            ; E114 A2 00                    ..
+        rol     a                               ; E116 2A                       *
+        bne     LE0D8                           ; E117 D0 BF                    ..
+        jsr     LE152                           ; E119 20 52 E1                  R.
+        rts                                     ; E11C 60                       `
 
 ; ----------------------------------------------------------------------------
-LE126:  jsr     LE064                           ; E126 20 64 E0                  d.
-        jsr     LE07A                           ; E129 20 7A E0                  z.
-        jsr     LE06F                           ; E12C 20 6F E0                  o.
-        rts                                     ; E12F 60                       `
+LE11D:  jsr     LE05B                           ; E11D 20 5B E0                  [.
+        jsr     LE071                           ; E120 20 71 E0                  q.
+        jsr     LE066                           ; E123 20 66 E0                  f.
+        rts                                     ; E126 60                       `
 
 ; ----------------------------------------------------------------------------
-        ldy     #$00                            ; E130 A0 00                    ..
-LE132:  clc                                     ; E132 18                       .
-        adc     ($00),y                         ; E133 71 00                    q.
-        sta     ($00),y                         ; E135 91 00                    ..
-        pha                                     ; E137 48                       H
+        ldy     #$00                            ; E127 A0 00                    ..
+LE129:  clc                                     ; E129 18                       .
+        adc     ($00),y                         ; E12A 71 00                    q.
+        sta     ($00),y                         ; E12C 91 00                    ..
+        pha                                     ; E12E 48                       H
+        iny                                     ; E12F C8                       .
+        txa                                     ; E130 8A                       .
+        adc     ($00),y                         ; E131 71 00                    q.
+        sta     ($00),y                         ; E133 91 00                    ..
+        tax                                     ; E135 AA                       .
+        pla                                     ; E136 68                       h
+        rts                                     ; E137 60                       `
+
+; ----------------------------------------------------------------------------
         iny                                     ; E138 C8                       .
-        txa                                     ; E139 8A                       .
-        adc     ($00),y                         ; E13A 71 00                    q.
-        sta     ($00),y                         ; E13C 91 00                    ..
-        tax                                     ; E13E AA                       .
-        pla                                     ; E13F 68                       h
-        rts                                     ; E140 60                       `
+LE139:  pha                                     ; E139 48                       H
+        clc                                     ; E13A 18                       .
+        tya                                     ; E13B 98                       .
+        adc     $00                             ; E13C 65 00                    e.
+        sta     $00                             ; E13E 85 00                    ..
+        bcc     LE144                           ; E140 90 02                    ..
+        inc     $01                             ; E142 E6 01                    ..
+LE144:  pla                                     ; E144 68                       h
+        rts                                     ; E145 60                       `
 
 ; ----------------------------------------------------------------------------
-        iny                                     ; E141 C8                       .
-LE142:  pha                                     ; E142 48                       H
-        clc                                     ; E143 18                       .
-        tya                                     ; E144 98                       .
-        adc     $00                             ; E145 65 00                    e.
-        sta     $00                             ; E147 85 00                    ..
-        bcc     LE14D                           ; E149 90 02                    ..
-        inc     $01                             ; E14B E6 01                    ..
-LE14D:  pla                                     ; E14D 68                       h
-        rts                                     ; E14E 60                       `
+LE146:  ldy     #$00                            ; E146 A0 00                    ..
+        beq     LE151                           ; E148 F0 07                    ..
+        lda     #$38                            ; E14A A9 38                    .8
+        ldx     #$E0                            ; E14C A2 E0                    ..
+        jmp     L0200                           ; E14E 4C 00 02                 L..
 
 ; ----------------------------------------------------------------------------
-LE14F:  ldy     #$00                            ; E14F A0 00                    ..
-        beq     LE15A                           ; E151 F0 07                    ..
-        lda     #$41                            ; E153 A9 41                    .A
-        ldx     #$E0                            ; E155 A2 E0                    ..
-        jmp     L0200                           ; E157 4C 00 02                 L..
+LE151:  rts                                     ; E151 60                       `
 
 ; ----------------------------------------------------------------------------
-LE15A:  rts                                     ; E15A 60                       `
+LE152:  ldy     #$04                            ; E152 A0 04                    ..
+        jmp     LE139                           ; E154 4C 39 E1                 L9.
 
 ; ----------------------------------------------------------------------------
-LE15B:  lda     #$00                            ; E15B A9 00                    ..
-        sta     $08                             ; E15D 85 08                    ..
-        lda     #$E0                            ; E15F A9 E0                    ..
-        sta     $09                             ; E161 85 09                    ..
-        lda     #$00                            ; E163 A9 00                    ..
-        sta     $0A                             ; E165 85 0A                    ..
-        lda     #$02                            ; E167 A9 02                    ..
-        sta     $0B                             ; E169 85 0B                    ..
-        ldx     #$DA                            ; E16B A2 DA                    ..
-        lda     #$FF                            ; E16D A9 FF                    ..
-        sta     $10                             ; E16F 85 10                    ..
-        ldy     #$00                            ; E171 A0 00                    ..
-LE173:  inx                                     ; E173 E8                       .
-        beq     LE183                           ; E174 F0 0D                    ..
-LE176:  lda     ($08),y                         ; E176 B1 08                    ..
-        sta     ($0A),y                         ; E178 91 0A                    ..
-        iny                                     ; E17A C8                       .
-        bne     LE173                           ; E17B D0 F6                    ..
-        inc     $09                             ; E17D E6 09                    ..
-        inc     $0B                             ; E17F E6 0B                    ..
-        bne     LE173                           ; E181 D0 F0                    ..
-LE183:  inc     $10                             ; E183 E6 10                    ..
-        bne     LE176                           ; E185 D0 EF                    ..
-        rts                                     ; E187 60                       `
+        ldy     #$01                            ; E157 A0 01                    ..
+LE159:  lda     ($00),y                         ; E159 B1 00                    ..
+        tax                                     ; E15B AA                       .
+        dey                                     ; E15C 88                       .
+        lda     ($00),y                         ; E15D B1 00                    ..
+        rts                                     ; E15F 60                       `
 
 ; ----------------------------------------------------------------------------
-LE188:  ldy     #$04                            ; E188 A0 04                    ..
-        jmp     LE142                           ; E18A 4C 42 E1                 LB.
+        lda     #$00                            ; E160 A9 00                    ..
+        ldx     #$00                            ; E162 A2 00                    ..
+LE164:  pha                                     ; E164 48                       H
+        lda     $00                             ; E165 A5 00                    ..
+        sec                                     ; E167 38                       8
+        sbc     #$02                            ; E168 E9 02                    ..
+        sta     $00                             ; E16A 85 00                    ..
+        bcs     LE170                           ; E16C B0 02                    ..
+        dec     $01                             ; E16E C6 01                    ..
+LE170:  ldy     #$01                            ; E170 A0 01                    ..
+        txa                                     ; E172 8A                       .
+        sta     ($00),y                         ; E173 91 00                    ..
+        pla                                     ; E175 68                       h
+        dey                                     ; E176 88                       .
+        sta     ($00),y                         ; E177 91 00                    ..
+        rts                                     ; E179 60                       `
 
 ; ----------------------------------------------------------------------------
-        ldy     #$01                            ; E18D A0 01                    ..
-LE18F:  lda     ($00),y                         ; E18F B1 00                    ..
-        tax                                     ; E191 AA                       .
-        dey                                     ; E192 88                       .
-        lda     ($00),y                         ; E193 B1 00                    ..
-        rts                                     ; E195 60                       `
+        ldy     #$00                            ; E17A A0 00                    ..
+LE17C:  sta     ($00),y                         ; E17C 91 00                    ..
+        iny                                     ; E17E C8                       .
+        pha                                     ; E17F 48                       H
+        txa                                     ; E180 8A                       .
+        sta     ($00),y                         ; E181 91 00                    ..
+        pla                                     ; E183 68                       h
+        rts                                     ; E184 60                       `
 
 ; ----------------------------------------------------------------------------
-        lda     #$00                            ; E196 A9 00                    ..
-        ldx     #$00                            ; E198 A2 00                    ..
-LE19A:  pha                                     ; E19A 48                       H
-        lda     $00                             ; E19B A5 00                    ..
-        sec                                     ; E19D 38                       8
-        sbc     #$02                            ; E19E E9 02                    ..
-        sta     $00                             ; E1A0 85 00                    ..
-        bcs     LE1A6                           ; E1A2 B0 02                    ..
-        dec     $01                             ; E1A4 C6 01                    ..
-LE1A6:  ldy     #$01                            ; E1A6 A0 01                    ..
-        txa                                     ; E1A8 8A                       .
-        sta     ($00),y                         ; E1A9 91 00                    ..
-        pla                                     ; E1AB 68                       h
-        dey                                     ; E1AC 88                       .
-        sta     ($00),y                         ; E1AD 91 00                    ..
-        rts                                     ; E1AF 60                       `
-
-; ----------------------------------------------------------------------------
-        ldy     #$00                            ; E1B0 A0 00                    ..
-LE1B2:  sta     ($00),y                         ; E1B2 91 00                    ..
-        iny                                     ; E1B4 C8                       .
-        pha                                     ; E1B5 48                       H
-        txa                                     ; E1B6 8A                       .
-        sta     ($00),y                         ; E1B7 91 00                    ..
-        pla                                     ; E1B9 68                       h
-        rts                                     ; E1BA 60                       `
-
-; ----------------------------------------------------------------------------
-LE1BB:  lda     #$25                            ; E1BB A9 25                    .%
-        sta     $08                             ; E1BD 85 08                    ..
-        lda     #$02                            ; E1BF A9 02                    ..
-        sta     $09                             ; E1C1 85 09                    ..
-        lda     #$00                            ; E1C3 A9 00                    ..
-        tay                                     ; E1C5 A8                       .
-        ldx     #$00                            ; E1C6 A2 00                    ..
-        beq     LE1D4                           ; E1C8 F0 0A                    ..
-LE1CA:  sta     ($08),y                         ; E1CA 91 08                    ..
-        iny                                     ; E1CC C8                       .
-        bne     LE1CA                           ; E1CD D0 FB                    ..
-        inc     $09                             ; E1CF E6 09                    ..
-        dex                                     ; E1D1 CA                       .
-        bne     LE1CA                           ; E1D2 D0 F6                    ..
-LE1D4:  cpy     #$00                            ; E1D4 C0 00                    ..
-        beq     LE1DD                           ; E1D6 F0 05                    ..
-        sta     ($08),y                         ; E1D8 91 08                    ..
-        iny                                     ; E1DA C8                       .
-        bne     LE1D4                           ; E1DB D0 F7                    ..
-LE1DD:  rts                                     ; E1DD 60                       `
-
-; ----------------------------------------------------------------------------
+        nop                                     ; E185 EA                       .
+        nop                                     ; E186 EA                       .
+        nop                                     ; E187 EA                       .
+        nop                                     ; E188 EA                       .
+        nop                                     ; E189 EA                       .
+        nop                                     ; E18A EA                       .
+        nop                                     ; E18B EA                       .
+        nop                                     ; E18C EA                       .
+        nop                                     ; E18D EA                       .
+        nop                                     ; E18E EA                       .
+        nop                                     ; E18F EA                       .
+        nop                                     ; E190 EA                       .
+        nop                                     ; E191 EA                       .
+        nop                                     ; E192 EA                       .
+        nop                                     ; E193 EA                       .
+        nop                                     ; E194 EA                       .
+        nop                                     ; E195 EA                       .
+        nop                                     ; E196 EA                       .
+        nop                                     ; E197 EA                       .
+        nop                                     ; E198 EA                       .
+        nop                                     ; E199 EA                       .
+        nop                                     ; E19A EA                       .
+        nop                                     ; E19B EA                       .
+        nop                                     ; E19C EA                       .
+        nop                                     ; E19D EA                       .
+        nop                                     ; E19E EA                       .
+        nop                                     ; E19F EA                       .
+        nop                                     ; E1A0 EA                       .
+        nop                                     ; E1A1 EA                       .
+        nop                                     ; E1A2 EA                       .
+        nop                                     ; E1A3 EA                       .
+        nop                                     ; E1A4 EA                       .
+        nop                                     ; E1A5 EA                       .
+        nop                                     ; E1A6 EA                       .
+        nop                                     ; E1A7 EA                       .
+        nop                                     ; E1A8 EA                       .
+        nop                                     ; E1A9 EA                       .
+        nop                                     ; E1AA EA                       .
+        nop                                     ; E1AB EA                       .
+        nop                                     ; E1AC EA                       .
+        nop                                     ; E1AD EA                       .
+        nop                                     ; E1AE EA                       .
+        nop                                     ; E1AF EA                       .
+        nop                                     ; E1B0 EA                       .
+        nop                                     ; E1B1 EA                       .
+        nop                                     ; E1B2 EA                       .
+        nop                                     ; E1B3 EA                       .
+        nop                                     ; E1B4 EA                       .
+        nop                                     ; E1B5 EA                       .
+        nop                                     ; E1B6 EA                       .
+        nop                                     ; E1B7 EA                       .
+        nop                                     ; E1B8 EA                       .
+        nop                                     ; E1B9 EA                       .
+        nop                                     ; E1BA EA                       .
+        nop                                     ; E1BB EA                       .
+        nop                                     ; E1BC EA                       .
+        nop                                     ; E1BD EA                       .
+        nop                                     ; E1BE EA                       .
+        nop                                     ; E1BF EA                       .
+        nop                                     ; E1C0 EA                       .
+        nop                                     ; E1C1 EA                       .
+        nop                                     ; E1C2 EA                       .
+        nop                                     ; E1C3 EA                       .
+        nop                                     ; E1C4 EA                       .
+        nop                                     ; E1C5 EA                       .
+        nop                                     ; E1C6 EA                       .
+        nop                                     ; E1C7 EA                       .
+        nop                                     ; E1C8 EA                       .
+        nop                                     ; E1C9 EA                       .
+        nop                                     ; E1CA EA                       .
+        nop                                     ; E1CB EA                       .
+        nop                                     ; E1CC EA                       .
+        nop                                     ; E1CD EA                       .
+        nop                                     ; E1CE EA                       .
+        nop                                     ; E1CF EA                       .
+        nop                                     ; E1D0 EA                       .
+        nop                                     ; E1D1 EA                       .
+        nop                                     ; E1D2 EA                       .
+        nop                                     ; E1D3 EA                       .
+        nop                                     ; E1D4 EA                       .
+        nop                                     ; E1D5 EA                       .
+        nop                                     ; E1D6 EA                       .
+        nop                                     ; E1D7 EA                       .
+        nop                                     ; E1D8 EA                       .
+        nop                                     ; E1D9 EA                       .
+        nop                                     ; E1DA EA                       .
+        nop                                     ; E1DB EA                       .
+        nop                                     ; E1DC EA                       .
+        nop                                     ; E1DD EA                       .
         nop                                     ; E1DE EA                       .
         nop                                     ; E1DF EA                       .
         nop                                     ; E1E0 EA                       .
@@ -8020,6 +8058,7 @@ LE1DD:  rts                                     ; E1DD 60                       
         nop                                     ; FFF7 EA                       .
         nop                                     ; FFF8 EA                       .
         nop                                     ; FFF9 EA                       .
-        eor     $25E0                           ; FFFA 4D E0 25                 M.%
-        cpx     #$4E                            ; FFFD E0 4E                    .N
+        .byte   $44                             ; FFFA 44                       D
+        cpx     #$25                            ; FFFB E0 25                    .%
+        cpx     #$45                            ; FFFD E0 45                    .E
 LFFFF:  .byte   $E0                             ; FFFF E0                       .
