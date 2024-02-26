@@ -96,6 +96,7 @@ minipro -p AT28C64B -w blink
 - https://www.grappendorf.net/projects/6502-home-computer/software-development.html
 - https://www.masswerk.at/6502/6502_instruction_set.html#STA
 - https://github.com/peternoyes/dodo-sim
+- https://mike42.me/blog/2021-07-adding-a-serial-port-to-my-6502-computer
 - https://github.com/SleepingInsomniac/6502-Breadboard-Computer
 - https://cc65.github.io/doc/intro.html
 - https://forums.atariage.com/topic/296494-calling-asm-proc-from-c/
