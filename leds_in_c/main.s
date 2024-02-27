@@ -10,12 +10,109 @@
 	.importzp	sp, sreg, regsave, regbank
 	.importzp	tmp1, tmp2, tmp3, tmp4, ptr1, ptr2, ptr3, ptr4
 	.macpack	longbranch
-	.dbg		file, "main.c", 567, 1708889737
+	.dbg		file, "main_memory_mapped.c", 867, 1709072213
+	.dbg		file, "/home/napicella/github/cc65/include/stdint.h", 6196, 1707073946
 	.forceimport	__STARTUP__
-	.import		_ledOff
-	.import		_ledOn
+	.export		_ledOn2
+	.export		_ledOff2
 	.export		_spin
 	.export		_main
+
+; ---------------------------------------------------------------
+; void __near__ ledOn2 (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_ledOn2: near
+
+	.dbg	func, "ledOn2", "00", static, "_ledOn2"
+	.dbg	sym, "a", "00", auto, -2
+	.dbg	sym, "b", "00", auto, -4
+
+.segment	"CODE"
+
+	.dbg	line, "main_memory_mapped.c", 11
+	jsr     decsp4
+	ldx     #$80
+	lda     #$02
+	ldy     #$02
+	jsr     staxysp
+	.dbg	line, "main_memory_mapped.c", 12
+	ldy     #$03
+	jsr     ldaxysp
+	jsr     pushax
+	ldx     #$00
+	lda     #$FF
+	ldy     #$00
+	jsr     staspidx
+	.dbg	line, "main_memory_mapped.c", 14
+	ldx     #$80
+	lda     #$00
+	ldy     #$00
+	jsr     staxysp
+	.dbg	line, "main_memory_mapped.c", 15
+	ldy     #$01
+	jsr     ldaxysp
+	jsr     pushax
+	ldx     #$00
+	lda     #$FF
+	ldy     #$00
+	jsr     staspidx
+	.dbg	line, "main_memory_mapped.c", 16
+	jsr     incsp4
+	rts
+
+	.dbg	line
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ ledOff2 (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_ledOff2: near
+
+	.dbg	func, "ledOff2", "00", static, "_ledOff2"
+	.dbg	sym, "a", "00", auto, -2
+	.dbg	sym, "b", "00", auto, -4
+
+.segment	"CODE"
+
+	.dbg	line, "main_memory_mapped.c", 21
+	jsr     decsp4
+	ldx     #$80
+	lda     #$02
+	ldy     #$02
+	jsr     staxysp
+	.dbg	line, "main_memory_mapped.c", 22
+	ldy     #$03
+	jsr     ldaxysp
+	jsr     pushax
+	ldx     #$00
+	lda     #$FF
+	ldy     #$00
+	jsr     staspidx
+	.dbg	line, "main_memory_mapped.c", 24
+	ldx     #$80
+	lda     #$00
+	ldy     #$00
+	jsr     staxysp
+	.dbg	line, "main_memory_mapped.c", 25
+	ldy     #$01
+	jsr     ldaxysp
+	jsr     pushax
+	ldx     #$00
+	lda     #$00
+	ldy     #$00
+	jsr     staspidx
+	.dbg	line, "main_memory_mapped.c", 26
+	jsr     incsp4
+	rts
+
+	.dbg	line
+.endproc
 
 ; ---------------------------------------------------------------
 ; void __near__ spin (void)
@@ -31,29 +128,29 @@
 
 .segment	"CODE"
 
-	.dbg	line, "main.c", 5
+	.dbg	line, "main_memory_mapped.c", 29
 	ldx     #$00
 	lda     #$00
 	jsr     pushax
-	.dbg	line, "main.c", 6
+	.dbg	line, "main_memory_mapped.c", 30
 	ldx     #$00
 	lda     #$00
 	jsr     pushax
-	.dbg	line, "main.c", 8
+	.dbg	line, "main_memory_mapped.c", 32
 	jmp     L0007
-	.dbg	line, "main.c", 9
+	.dbg	line, "main_memory_mapped.c", 33
 L0002:	ldy     #$02
 	ldx     #$00
 	lda     #$01
 	jsr     addeqysp
-	.dbg	line, "main.c", 10
+	.dbg	line, "main_memory_mapped.c", 34
 	jmp     L0008
-	.dbg	line, "main.c", 11
+	.dbg	line, "main_memory_mapped.c", 35
 L0006:	ldy     #$00
 	ldx     #$00
 	lda     #$01
 	jsr     addeqysp
-	.dbg	line, "main.c", 10
+	.dbg	line, "main_memory_mapped.c", 34
 L0008:	ldy     #$01
 	jsr     ldaxysp
 	cmp     #$FF
@@ -66,7 +163,7 @@ L0009:	asl     a
 	ldx     #$00
 	rol     a
 	jne     L0006
-	.dbg	line, "main.c", 8
+	.dbg	line, "main_memory_mapped.c", 32
 L0007:	ldy     #$03
 	jsr     ldaxysp
 	cmp     #$FF
@@ -79,31 +176,31 @@ L0005:	asl     a
 	ldx     #$00
 	rol     a
 	jne     L0002
-	.dbg	line, "main.c", 15
+	.dbg	line, "main_memory_mapped.c", 39
 	ldx     #$00
 	lda     #$00
 	ldy     #$02
 	jsr     staxysp
-	.dbg	line, "main.c", 16
+	.dbg	line, "main_memory_mapped.c", 40
 	ldx     #$00
 	lda     #$00
 	ldy     #$00
 	jsr     staxysp
-	.dbg	line, "main.c", 18
+	.dbg	line, "main_memory_mapped.c", 42
 	jmp     L000F
-	.dbg	line, "main.c", 19
+	.dbg	line, "main_memory_mapped.c", 43
 L000A:	ldy     #$02
 	ldx     #$00
 	lda     #$01
 	jsr     addeqysp
-	.dbg	line, "main.c", 20
+	.dbg	line, "main_memory_mapped.c", 44
 	jmp     L0010
-	.dbg	line, "main.c", 21
+	.dbg	line, "main_memory_mapped.c", 45
 L000E:	ldy     #$00
 	ldx     #$00
 	lda     #$01
 	jsr     addeqysp
-	.dbg	line, "main.c", 20
+	.dbg	line, "main_memory_mapped.c", 44
 L0010:	ldy     #$01
 	jsr     ldaxysp
 	cmp     #$FF
@@ -116,7 +213,7 @@ L0011:	asl     a
 	ldx     #$00
 	rol     a
 	jne     L000E
-	.dbg	line, "main.c", 18
+	.dbg	line, "main_memory_mapped.c", 42
 L000F:	ldy     #$03
 	jsr     ldaxysp
 	cmp     #$FF
@@ -129,7 +226,7 @@ L000D:	asl     a
 	ldx     #$00
 	rol     a
 	jne     L000A
-	.dbg	line, "main.c", 24
+	.dbg	line, "main_memory_mapped.c", 48
 	jsr     incsp4
 	rts
 
@@ -148,31 +245,19 @@ L000D:	asl     a
 
 .segment	"CODE"
 
-	.dbg	line, "main.c", 28
+	.dbg	line, "main_memory_mapped.c", 51
 	jmp     L0004
-	.dbg	line, "main.c", 29
-L0002:	jsr     _ledOn
-	.dbg	line, "main.c", 30
+	.dbg	line, "main_memory_mapped.c", 52
+L0002:	jsr     _ledOn2
+	.dbg	line, "main_memory_mapped.c", 53
 	jsr     _spin
-	.dbg	line, "main.c", 31
+	.dbg	line, "main_memory_mapped.c", 54
+	jsr     _ledOff2
+	.dbg	line, "main_memory_mapped.c", 55
 	jsr     _spin
-	.dbg	line, "main.c", 32
-	jsr     _spin
-	.dbg	line, "main.c", 33
-	jsr     _spin
-	.dbg	line, "main.c", 34
-	jsr     _ledOff
-	.dbg	line, "main.c", 35
-	jsr     _spin
-	.dbg	line, "main.c", 36
-	jsr     _spin
-	.dbg	line, "main.c", 37
-	jsr     _spin
-	.dbg	line, "main.c", 38
-	jsr     _spin
-	.dbg	line, "main.c", 28
+	.dbg	line, "main_memory_mapped.c", 51
 L0004:	jmp     L0002
-	.dbg	line, "main.c", 40
+	.dbg	line, "main_memory_mapped.c", 57
 	rts
 
 	.dbg	line

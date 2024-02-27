@@ -1,3 +1,6 @@
+// A version of the blinking program that controls the VIA by calling functions (ledOff and ledOff)
+// defined in assembly 
+
 extern void __fastcall__  ledOff();
 extern void __fastcall__  ledOn();
 
