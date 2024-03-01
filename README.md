@@ -111,6 +111,7 @@ sta  _led_data
 ```
 
 __Links__
+- cc65 function reference describes the C functions available in the standard library. - https://cc65.github.io/doc/funcref.html
 - https://github.com/caseywdunn/eater_6502?tab=readme-ov-file
 - https://www.grappendorf.net/projects/6502-home-computer/software-development.html
 - https://www.masswerk.at/6502/6502_instruction_set.html#STA
