@@ -27,8 +27,6 @@ toggle_time=$0101
 irq:
   bit T1_LOWER_ORDER_COUNT  ; reset VIA interrupt (achieved by reading T1 lower)
   inc counter
-  bne exit_irq
-  inc counter + 1
 exit_irq:  
   rti
 
