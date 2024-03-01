@@ -1,3 +1,5 @@
+  ; Like the blink.s program, but it uses subroutines 
+  
   .setcpu "65C02"
   .segment "VECTORS"
 
