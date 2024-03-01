@@ -10,109 +10,13 @@
 	.importzp	sp, sreg, regsave, regbank
 	.importzp	tmp1, tmp2, tmp3, tmp4, ptr1, ptr2, ptr3, ptr4
 	.macpack	longbranch
-	.dbg		file, "main_memory_mapped.c", 867, 1709072213
+	.dbg		file, "main_fast_call_with_param.c", 1022, 1709301858
 	.dbg		file, "/home/napicella/github/cc65/include/stdint.h", 6196, 1707073946
 	.forceimport	__STARTUP__
-	.export		_ledOn2
-	.export		_ledOff2
+	.import		_led
 	.export		_spin
+	.export		_pow
 	.export		_main
-
-; ---------------------------------------------------------------
-; void __near__ ledOn2 (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_ledOn2: near
-
-	.dbg	func, "ledOn2", "00", static, "_ledOn2"
-	.dbg	sym, "a", "00", auto, -2
-	.dbg	sym, "b", "00", auto, -4
-
-.segment	"CODE"
-
-	.dbg	line, "main_memory_mapped.c", 11
-	jsr     decsp4
-	ldx     #$80
-	lda     #$02
-	ldy     #$02
-	jsr     staxysp
-	.dbg	line, "main_memory_mapped.c", 12
-	ldy     #$03
-	jsr     ldaxysp
-	jsr     pushax
-	ldx     #$00
-	lda     #$FF
-	ldy     #$00
-	jsr     staspidx
-	.dbg	line, "main_memory_mapped.c", 14
-	ldx     #$80
-	lda     #$00
-	ldy     #$00
-	jsr     staxysp
-	.dbg	line, "main_memory_mapped.c", 15
-	ldy     #$01
-	jsr     ldaxysp
-	jsr     pushax
-	ldx     #$00
-	lda     #$FF
-	ldy     #$00
-	jsr     staspidx
-	.dbg	line, "main_memory_mapped.c", 16
-	jsr     incsp4
-	rts
-
-	.dbg	line
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ ledOff2 (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_ledOff2: near
-
-	.dbg	func, "ledOff2", "00", static, "_ledOff2"
-	.dbg	sym, "a", "00", auto, -2
-	.dbg	sym, "b", "00", auto, -4
-
-.segment	"CODE"
-
-	.dbg	line, "main_memory_mapped.c", 21
-	jsr     decsp4
-	ldx     #$80
-	lda     #$02
-	ldy     #$02
-	jsr     staxysp
-	.dbg	line, "main_memory_mapped.c", 22
-	ldy     #$03
-	jsr     ldaxysp
-	jsr     pushax
-	ldx     #$00
-	lda     #$FF
-	ldy     #$00
-	jsr     staspidx
-	.dbg	line, "main_memory_mapped.c", 24
-	ldx     #$80
-	lda     #$00
-	ldy     #$00
-	jsr     staxysp
-	.dbg	line, "main_memory_mapped.c", 25
-	ldy     #$01
-	jsr     ldaxysp
-	jsr     pushax
-	ldx     #$00
-	lda     #$00
-	ldy     #$00
-	jsr     staspidx
-	.dbg	line, "main_memory_mapped.c", 26
-	jsr     incsp4
-	rts
-
-	.dbg	line
-.endproc
 
 ; ---------------------------------------------------------------
 ; void __near__ spin (void)
@@ -128,29 +32,29 @@
 
 .segment	"CODE"
 
-	.dbg	line, "main_memory_mapped.c", 29
+	.dbg	line, "main_fast_call_with_param.c", 12
 	ldx     #$00
 	lda     #$00
 	jsr     pushax
-	.dbg	line, "main_memory_mapped.c", 30
+	.dbg	line, "main_fast_call_with_param.c", 13
 	ldx     #$00
 	lda     #$00
 	jsr     pushax
-	.dbg	line, "main_memory_mapped.c", 32
+	.dbg	line, "main_fast_call_with_param.c", 15
 	jmp     L0007
-	.dbg	line, "main_memory_mapped.c", 33
+	.dbg	line, "main_fast_call_with_param.c", 16
 L0002:	ldy     #$02
 	ldx     #$00
 	lda     #$01
 	jsr     addeqysp
-	.dbg	line, "main_memory_mapped.c", 34
+	.dbg	line, "main_fast_call_with_param.c", 17
 	jmp     L0008
-	.dbg	line, "main_memory_mapped.c", 35
+	.dbg	line, "main_fast_call_with_param.c", 18
 L0006:	ldy     #$00
 	ldx     #$00
 	lda     #$01
 	jsr     addeqysp
-	.dbg	line, "main_memory_mapped.c", 34
+	.dbg	line, "main_fast_call_with_param.c", 17
 L0008:	ldy     #$01
 	jsr     ldaxysp
 	cmp     #$FF
@@ -163,7 +67,7 @@ L0009:	asl     a
 	ldx     #$00
 	rol     a
 	jne     L0006
-	.dbg	line, "main_memory_mapped.c", 32
+	.dbg	line, "main_fast_call_with_param.c", 15
 L0007:	ldy     #$03
 	jsr     ldaxysp
 	cmp     #$FF
@@ -176,31 +80,31 @@ L0005:	asl     a
 	ldx     #$00
 	rol     a
 	jne     L0002
-	.dbg	line, "main_memory_mapped.c", 39
+	.dbg	line, "main_fast_call_with_param.c", 22
 	ldx     #$00
 	lda     #$00
 	ldy     #$02
 	jsr     staxysp
-	.dbg	line, "main_memory_mapped.c", 40
+	.dbg	line, "main_fast_call_with_param.c", 23
 	ldx     #$00
 	lda     #$00
 	ldy     #$00
 	jsr     staxysp
-	.dbg	line, "main_memory_mapped.c", 42
+	.dbg	line, "main_fast_call_with_param.c", 25
 	jmp     L000F
-	.dbg	line, "main_memory_mapped.c", 43
+	.dbg	line, "main_fast_call_with_param.c", 26
 L000A:	ldy     #$02
 	ldx     #$00
 	lda     #$01
 	jsr     addeqysp
-	.dbg	line, "main_memory_mapped.c", 44
+	.dbg	line, "main_fast_call_with_param.c", 27
 	jmp     L0010
-	.dbg	line, "main_memory_mapped.c", 45
+	.dbg	line, "main_fast_call_with_param.c", 28
 L000E:	ldy     #$00
 	ldx     #$00
 	lda     #$01
 	jsr     addeqysp
-	.dbg	line, "main_memory_mapped.c", 44
+	.dbg	line, "main_fast_call_with_param.c", 27
 L0010:	ldy     #$01
 	jsr     ldaxysp
 	cmp     #$FF
@@ -213,7 +117,7 @@ L0011:	asl     a
 	ldx     #$00
 	rol     a
 	jne     L000E
-	.dbg	line, "main_memory_mapped.c", 42
+	.dbg	line, "main_fast_call_with_param.c", 25
 L000F:	ldy     #$03
 	jsr     ldaxysp
 	cmp     #$FF
@@ -226,8 +130,76 @@ L000D:	asl     a
 	ldx     #$00
 	rol     a
 	jne     L000A
-	.dbg	line, "main_memory_mapped.c", 48
+	.dbg	line, "main_fast_call_with_param.c", 31
 	jsr     incsp4
+	rts
+
+	.dbg	line
+.endproc
+
+; ---------------------------------------------------------------
+; int __near__ pow (unsigned char x, unsigned char n)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_pow: near
+
+	.dbg	func, "pow", "00", static, "_pow"
+	.dbg	sym, "x", "00", auto, 1
+	.dbg	sym, "n", "00", auto, 0
+	.dbg	sym, "i", "00", auto, -1
+	.dbg	sym, "number", "00", auto, -2
+
+.segment	"CODE"
+
+	.dbg	line, "main_fast_call_with_param.c", 34
+	jsr     pusha
+	.dbg	line, "main_fast_call_with_param.c", 36
+	jsr     decsp1
+	lda     #$01
+	jsr     pusha
+	.dbg	line, "main_fast_call_with_param.c", 38
+	ldx     #$00
+	lda     #$00
+	ldy     #$01
+	sta     (sp),y
+L0002:	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	jsr     pushax
+	ldy     #$04
+	ldx     #$00
+	lda     (sp),y
+	jsr     tosultax
+	jne     L0005
+	jmp     L0003
+	.dbg	line, "main_fast_call_with_param.c", 39
+L0005:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	jsr     pushax
+	ldy     #$05
+	ldx     #$00
+	lda     (sp),y
+	jsr     tosumulax
+	ldy     #$00
+	sta     (sp),y
+	.dbg	line, "main_fast_call_with_param.c", 38
+	ldy     #$01
+	ldx     #$00
+	clc
+	lda     #$01
+	adc     (sp),y
+	sta     (sp),y
+	jmp     L0002
+	.dbg	line, "main_fast_call_with_param.c", 41
+L0003:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	jmp     L0001
+	.dbg	line, "main_fast_call_with_param.c", 42
+L0001:	jsr     incsp4
 	rts
 
 	.dbg	line
@@ -242,22 +214,57 @@ L000D:	asl     a
 .proc	_main: near
 
 	.dbg	func, "main", "00", static, "_main"
+	.dbg	sym, "i", "00", auto, -1
 
 .segment	"CODE"
 
-	.dbg	line, "main_memory_mapped.c", 51
-	jmp     L0004
-	.dbg	line, "main_memory_mapped.c", 52
-L0002:	jsr     _ledOn2
-	.dbg	line, "main_memory_mapped.c", 53
+	.dbg	line, "main_fast_call_with_param.c", 45
+	lda     #$00
+	jsr     pusha
+	.dbg	line, "main_fast_call_with_param.c", 46
+	jmp     L0006
+	.dbg	line, "main_fast_call_with_param.c", 47
+L0002:	ldx     #$00
+	lda     #$00
+	ldy     #$00
+	sta     (sp),y
+L0005:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$08
+	jsr     boolult
+	jne     L0008
+	jmp     L0006
+	.dbg	line, "main_fast_call_with_param.c", 49
+L0008:	ldx     #$00
+	lda     #$02
+	jsr     pusha
+	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	jsr     _pow
+	ldx     #$00
+	jsr     _led
+	.dbg	line, "main_fast_call_with_param.c", 50
 	jsr     _spin
-	.dbg	line, "main_memory_mapped.c", 54
-	jsr     _ledOff2
-	.dbg	line, "main_memory_mapped.c", 55
+	.dbg	line, "main_fast_call_with_param.c", 51
 	jsr     _spin
-	.dbg	line, "main_memory_mapped.c", 51
-L0004:	jmp     L0002
-	.dbg	line, "main_memory_mapped.c", 57
+	.dbg	line, "main_fast_call_with_param.c", 52
+	jsr     _spin
+	.dbg	line, "main_fast_call_with_param.c", 53
+	jsr     _spin
+	.dbg	line, "main_fast_call_with_param.c", 47
+	ldy     #$00
+	ldx     #$00
+	clc
+	lda     #$01
+	adc     (sp),y
+	sta     (sp),y
+	jmp     L0005
+	.dbg	line, "main_fast_call_with_param.c", 46
+L0006:	jmp     L0002
+	.dbg	line, "main_fast_call_with_param.c", 56
+	jsr     incsp1
 	rts
 
 	.dbg	line

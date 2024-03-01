@@ -91,7 +91,26 @@ minipro -p AT28C64B -w blink
 ```
 
 
-#### Links
+#### Resources
+__calling assembly routines from C (calling sequence and fast calls)__ 
+https://www.cc65.org/doc/customizing-7.html
+
+__How do hardware timer/time sleep works__
+https://www.youtube.com/watch?v=g_koa00MBLg&ab_channel=BenEater
+
+
+__Reserving memory location in assembly__
+```
+.zeropage
+_led_data:    .res 1, $00
+
+.segment	"CODE"
+; you can use _led_data in the code, eg.
+lda  #$FF
+sta  _led_data
+```
+
+__Links__
 - https://github.com/caseywdunn/eater_6502?tab=readme-ov-file
 - https://www.grappendorf.net/projects/6502-home-computer/software-development.html
 - https://www.masswerk.at/6502/6502_instruction_set.html#STA
@@ -108,9 +127,6 @@ minipro -p AT28C64B -w blink
 - https://www.tejotron.com/
 - https://www.reddit.com/r/beneater/comments/evis0o/6502_and_c_language/
 
-
-
-Push registers to stack: https://youtu.be/xBjQVxVxOxc?si=bFp7z4tenfyvrqtS&t=1049
 
 
 Install minipro
@@ -160,21 +176,5 @@ a binary that exactly fits the rom and sets the address `0x1ffc` and `0x1ffd` to
 - `blink_subroutines.s` runs the blink program with subroutines. This requires a ram since the `RTS` function (return sub routine) needs to know where to return to. This info is stored in the stack by the `JSR` (jump sub routine). The assemply also use `PHX` and `PLX` (push/pull x register to stack) to showcase how a subroutine can avoid interfere with registers being set outside of the subroutine.
 
 
-### How do hardware timer/time sleep works
-https://www.youtube.com/watch?v=g_koa00MBLg&ab_channel=BenEater
 
 
-
-### Compiling C
-```
-cp ~/github/cc65/lib/supervision.lib ~/github/8-bit-computer/leds_in_c/
-
-ca65 --cpu 65C02 io.s
-
-ca65 --cpu 65C02 crt0.s
-ar65 a supervision.lib crt0.o
-cc65 -t none --cpu 65C02 main.c
-ca65 --cpu 65C02 main.s
-ld65 -C load.cfg -o kernel.bin -vm crt0.o io.o main.o supervision.lib
-minipro -p AT28C64B -w kernel.bin
-```
