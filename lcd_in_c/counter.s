@@ -53,10 +53,10 @@ counter_init:
  ; is not sent after N clock cycle, but at N + 2.
  ;
  ; Here we initialize the counter to trigger every 10.000 clock cyles (10 ms).
- ; The $2702 comes from the fact that the counter sends the interrupt 
+ ; The $270E comes from the fact that the counter sends the interrupt 
  ; after N + 2 cycles, which means if we want to receive an interrupt
  ; every 10.000 cycles, we need to load the counter with 9998, or 
- ; $2702 in hex.
+ ; $270E in hex.
   lda #$0E
   sta T1_LOWER_ORDER_COUNT
 
