@@ -1,72 +1,104 @@
 Modules list:
 -------------
 interrupt.o:
-    CODE              Offs=000000  Size=000013  Align=00001  Fill=0000
+    CODE              Offs=000000  Size=000016  Align=00001  Fill=0000
 vectors.o:
     VECTORS           Offs=000000  Size=000006  Align=00001  Fill=0000
 wait.o:
-    CODE              Offs=000013  Size=000004  Align=00001  Fill=0000
+    CODE              Offs=000016  Size=000004  Align=00001  Fill=0000
 lcd.o:
-    CODE              Offs=000017  Size=0000C9  Align=00001  Fill=0000
+    CODE              Offs=00001A  Size=0000D8  Align=00001  Fill=0000
     ZEROPAGE          Offs=000000  Size=000002  Align=00001  Fill=0000
+counter.o:
+    CODE              Offs=0000F2  Size=000029  Align=00001  Fill=0000
+    ZEROPAGE          Offs=000002  Size=000001  Align=00001  Fill=0000
 main.o:
-    CODE              Offs=0000E0  Size=00001B  Align=00001  Fill=0000
-    RODATA            Offs=000000  Size=000007  Align=00001  Fill=0000
+    CODE              Offs=00011B  Size=000096  Align=00001  Fill=0000
+    DATA              Offs=000000  Size=000004  Align=00001  Fill=0000
+none.lib(_hextab.o):
+    RODATA            Offs=000000  Size=000010  Align=00001  Fill=0000
+none.lib(addeqsp.o):
+    CODE              Offs=0001B1  Size=000011  Align=00001  Fill=0000
 none.lib(addysp.o):
-    CODE              Offs=0000FB  Size=00000E  Align=00001  Fill=0000
+    CODE              Offs=0001C2  Size=00000E  Align=00001  Fill=0000
 none.lib(condes.o):
-    CODE              Offs=000109  Size=00000C  Align=00001  Fill=0000
-    DATA              Offs=000000  Size=000025  Align=00001  Fill=0000
+    CODE              Offs=0001D0  Size=00000C  Align=00001  Fill=0000
+    DATA              Offs=000004  Size=000025  Align=00001  Fill=0000
     ONCE              Offs=000000  Size=00000C  Align=00001  Fill=0000
 none.lib(crt0.o):
     STARTUP           Offs=000000  Size=000013  Align=00001  Fill=0000
-none.lib(decsp7.o):
-    CODE              Offs=000115  Size=00000D  Align=00001  Fill=0000
-none.lib(incsp7.o):
-    CODE              Offs=000122  Size=000005  Align=00001  Fill=0000
+none.lib(itoa.o):
+    CODE              Offs=0001DC  Size=000094  Align=00001  Fill=0000
+    RODATA            Offs=000010  Size=000007  Align=00001  Fill=0000
+none.lib(ldaxsp.o):
+    CODE              Offs=000270  Size=000009  Align=00001  Fill=0000
+none.lib(leaaxsp.o):
+    CODE              Offs=000279  Size=00000C  Align=00001  Fill=0000
+none.lib(pushax.o):
+    CODE              Offs=000285  Size=00001A  Align=00001  Fill=0000
+none.lib(sub.o):
+    CODE              Offs=00029F  Size=000015  Align=00001  Fill=0000
+none.lib(subysp.o):
+    CODE              Offs=0002B4  Size=00000D  Align=00001  Fill=0000
 none.lib(zeropage.o):
-    ZEROPAGE          Offs=000002  Size=00001A  Align=00001  Fill=0000
+    ZEROPAGE          Offs=000003  Size=00001A  Align=00001  Fill=0000
 
 
 Segment list:
 -------------
 Name                   Start     End    Size  Align
 ----------------------------------------------------
-ZEROPAGE              000000  00001B  00001C  00001
-DATA                  000200  000224  000025  00001
-STARTUP               00E025  00E037  000013  00001
-ONCE                  00E038  00E043  00000C  00001
-CODE                  00E044  00E16A  000127  00001
-RODATA                00E16B  00E171  000007  00001
+ZEROPAGE              000000  00001C  00001D  00001
+DATA                  000200  000228  000029  00001
+STARTUP               00E029  00E03B  000013  00001
+ONCE                  00E03C  00E047  00000C  00001
+CODE                  00E048  00E308  0002C1  00001
+RODATA                00E309  00E31F  000017  00001
 VECTORS               00FFFA  00FFFF  000006  00001
 
 
 Exports list by name:
 ---------------------
-__CONSTRUCTOR_COUNT__     000000 REA    __CONSTRUCTOR_TABLE__     00E038 RLA    
-__DESTRUCTOR_COUNT__      000000 REA    __DESTRUCTOR_TABLE__      00E038 RLA    
+__CONSTRUCTOR_COUNT__     000000 REA    __CONSTRUCTOR_TABLE__     00E03C RLA    
+__DESTRUCTOR_COUNT__      000000 REA    __DESTRUCTOR_TABLE__      00E03C RLA    
 __RAM_SIZE__              007E00 REA    __RAM_START__             000200 RLA    
-__STARTUP__               000001 REA    _init                     00E025 RLA    
-_irq_int                  00E045 RLA    _lcd_init                 00E05B RLA    
-_lcd_print                00E07C RLA    _main                     00E124 RLA    
-_nmi_int                  00E044 RLA    _stop                     00E05A RLA    
-addysp                    00E140 RLA    decsp7                    00E159 RLA    
-donelib                   00E14D RLA    incsp7                    00E166 RLA    
-sp                        000002 RLZ    
+__STARTUP__               000001 REA    __hextab                  00E309 RLA    
+_counter_init             00E13F RLA    _counter_irq              00E15D RLA    
+_init                     00E029 RLA    _irq_int                  00E049 RLA    
+_itoa                     00E242 RLA    _lcd_clear                00E12B RLA    
+_lcd_init                 00E062 RLA    _lcd_print                00E083 RLA    
+_main                     00E1A8 RLA    _millis                   00E13A RLA    
+_nmi_int                  00E048 RLA    _stop                     00E061 RLA    
+addeqysp                  00E1FB RLA    addysp                    00E20B RLA    
+addysp1                   00E20A RLA    donelib                   00E218 RLA    
+ldaxysp                   00E2BA RLA    leaa0sp                   00E2C1 RLA    
+ptr2                      00000D RLZ    ptr3                      00000F RLZ    
+pushax                    00E2D1 RLA    sp                        000003 RLZ    
+sreg                      000005 RLZ    subysp                    00E2FC RLA    
+tmp1                      000013 RLZ    tossubax                  00E2E9 RLA    
+
 
 
 Exports list by value:
 ----------------------
 __CONSTRUCTOR_COUNT__     000000 REA    __DESTRUCTOR_COUNT__      000000 REA    
-__STARTUP__               000001 REA    sp                        000002 RLZ    
+__STARTUP__               000001 REA    sp                        000003 RLZ    
+sreg                      000005 RLZ    ptr2                      00000D RLZ    
+ptr3                      00000F RLZ    tmp1                      000013 RLZ    
 __RAM_START__             000200 RLA    __RAM_SIZE__              007E00 REA    
-_init                     00E025 RLA    __CONSTRUCTOR_TABLE__     00E038 RLA    
-__DESTRUCTOR_TABLE__      00E038 RLA    _nmi_int                  00E044 RLA    
-_irq_int                  00E045 RLA    _stop                     00E05A RLA    
-_lcd_init                 00E05B RLA    _lcd_print                00E07C RLA    
-_main                     00E124 RLA    addysp                    00E140 RLA    
-donelib                   00E14D RLA    decsp7                    00E159 RLA    
-incsp7                    00E166 RLA    
+_init                     00E029 RLA    __CONSTRUCTOR_TABLE__     00E03C RLA    
+__DESTRUCTOR_TABLE__      00E03C RLA    _nmi_int                  00E048 RLA    
+_irq_int                  00E049 RLA    _stop                     00E061 RLA    
+_lcd_init                 00E062 RLA    _lcd_print                00E083 RLA    
+_lcd_clear                00E12B RLA    _millis                   00E13A RLA    
+_counter_init             00E13F RLA    _counter_irq              00E15D RLA    
+_main                     00E1A8 RLA    addeqysp                  00E1FB RLA    
+addysp1                   00E20A RLA    addysp                    00E20B RLA    
+donelib                   00E218 RLA    _itoa                     00E242 RLA    
+ldaxysp                   00E2BA RLA    leaa0sp                   00E2C1 RLA    
+pushax                    00E2D1 RLA    tossubax                  00E2E9 RLA    
+subysp                    00E2FC RLA    __hextab                  00E309 RLA    
+
 
 
 Imports list:
@@ -84,32 +116,70 @@ __RAM_SIZE__ ([linker generated]):
 __RAM_START__ ([linker generated]):
     crt0.o                    crt0.s:12
 __STARTUP__ (crt0.o):
-    main.o                    main.s:15
+    main.o                    main.s:17
+__hextab (_hextab.o):
+    itoa.o                    common/itoa.s:10
+_counter_init (counter.o):
+    main.o                    main.s:22
+_counter_irq (counter.o):
+    interrupt.o               interrupt.s:10
 _init (crt0.o):
     vectors.o                 vectors.s:7
 _irq_int (interrupt.o):
     vectors.o                 vectors.s:8
+_itoa (itoa.o):
+    main.o                    main.s:18
+_lcd_clear (lcd.o):
+    main.o                    main.s:21
 _lcd_init (lcd.o):
-    main.o                    main.s:16
+    main.o                    main.s:19
 _lcd_print (lcd.o):
-    main.o                    main.s:17
+    main.o                    main.s:20
 _main (main.o):
     crt0.o                    crt0.s:8
+_millis (counter.o):
+    main.o                    main.s:23
 _nmi_int (interrupt.o):
     vectors.o                 vectors.s:8
 _stop (wait.o):
     interrupt.o               interrupt.s:9
+addeqysp (addeqsp.o):
+    main.o                    main.s:145
 addysp (addysp.o):
-    incsp7.o                  runtime/incsp7.s:8
-decsp7 (decsp7.o):
-    main.o                    main.s:57
+    main.o                    main.s:145
+addysp1 (addysp.o):
+    sub.o                     runtime/sub.s:8
+    itoa.o                    common/itoa.s:9
 donelib (condes.o):
     crt0.o                    crt0.s:14
-incsp7 (incsp7.o):
-    main.o                    main.s:57
+ldaxysp (ldaxsp.o):
+    main.o                    main.s:145
+leaa0sp (leaaxsp.o):
+    main.o                    main.s:145
+ptr2 (zeropage.o):
+    itoa.o                    common/itoa.s:11
+ptr3 (zeropage.o):
+    itoa.o                    common/itoa.s:11
+pushax (pushax.o):
+    main.o                    main.s:145
+    main.o                    main.s:145
 sp (zeropage.o):
-    addysp.o                  runtime/addysp.s:8
-    decsp7.o                  runtime/decsp7.s:8
+    subysp.o                  runtime/subysp.s:9
+    sub.o                     runtime/sub.s:9
+    pushax.o                  runtime/pushax.s:8
+    leaaxsp.o                 runtime/leaaxsp.s:8
+    ldaxsp.o                  runtime/ldaxsp.s:8
+    itoa.o                    common/itoa.s:11
     crt0.o                    /home/napicella/github/cc65/asminc/zeropage.inc:11
+    addysp.o                  runtime/addysp.s:8
+    addeqsp.o                 runtime/addeqsp.s:8
     main.o                    main.s:10
+sreg (zeropage.o):
+    itoa.o                    common/itoa.s:11
+subysp (subysp.o):
+    main.o                    main.s:145
+tmp1 (zeropage.o):
+    itoa.o                    common/itoa.s:11
+tossubax (sub.o):
+    main.o                    main.s:145
 

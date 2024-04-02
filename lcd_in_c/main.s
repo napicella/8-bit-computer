@@ -10,12 +10,77 @@
 	.importzp	sp, sreg, regsave, regbank
 	.importzp	tmp1, tmp2, tmp3, tmp4, ptr1, ptr2, ptr3, ptr4
 	.macpack	longbranch
-	.dbg		file, "main_lcd.c", 231, 1712078205
+	.dbg		file, "main_lcd.c", 850, 1712092886
 	.dbg		file, "/home/napicella/github/cc65/include/stdint.h", 6196, 1707073946
+	.dbg		file, "/home/napicella/github/cc65/include/stdio.h", 6999, 1707073946
+	.dbg		file, "/home/napicella/github/cc65/include/stdlib.h", 6948, 1707073946
 	.forceimport	__STARTUP__
+	.import		_itoa
 	.import		_lcd_init
 	.import		_lcd_print
+	.import		_lcd_clear
+	.import		_counter_init
+	.import		_millis
+	.export		_lastcalled
+	.export		_current
+	.export		_delay
 	.export		_main
+
+.segment	"DATA"
+
+_lastcalled:
+	.word	$0000
+_current:
+	.word	$0000
+
+; ---------------------------------------------------------------
+; unsigned char __near__ delay (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_delay: near
+
+	.dbg	func, "delay", "00", static, "_delay"
+
+.segment	"CODE"
+
+	.dbg	line, "main_lcd.c", 18
+	jsr     _millis
+	sta     _current
+	stx     _current+1
+	.dbg	line, "main_lcd.c", 19
+	lda     _current
+	ldx     _current+1
+	jsr     pushax
+	lda     _lastcalled
+	ldx     _lastcalled+1
+	jsr     tossubax
+	cmp     #$65
+	txa
+	sbc     #$00
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0002
+	.dbg	line, "main_lcd.c", 20
+	lda     _current
+	ldx     _current+1
+	sta     _lastcalled
+	stx     _lastcalled+1
+	.dbg	line, "main_lcd.c", 21
+	ldx     #$00
+	lda     #$01
+	jmp     L0001
+	.dbg	line, "main_lcd.c", 23
+L0002:	ldx     #$00
+	lda     #$00
+	jmp     L0001
+	.dbg	line, "main_lcd.c", 24
+L0001:	rts
+
+	.dbg	line
+.endproc
 
 ; ---------------------------------------------------------------
 ; void __near__ main (void)
@@ -26,32 +91,55 @@
 .proc	_main: near
 
 	.dbg	func, "main", "00", static, "_main"
-	.dbg	sym, "str", "00", auto, -7
+	.dbg	sym, "time", "00", auto, -2
+	.dbg	sym, "buf", "00", auto, -12
 
 .segment	"CODE"
 
-	.dbg	line, "main_lcd.c", 8
-	jsr     decsp7
-	ldy     #$06
-L0002:	lda     M0001,y
-	sta     (sp),y
-	dey
-	bpl     L0002
-	.dbg	line, "main_lcd.c", 10
+	.dbg	line, "main_lcd.c", 27
+	ldx     #$00
+	lda     #$00
+	jsr     pushax
+	.dbg	line, "main_lcd.c", 30
+	ldy     #$0A
+	jsr     subysp
+	jsr     _counter_init
+	.dbg	line, "main_lcd.c", 31
 	jsr     _lcd_init
-	.dbg	line, "main_lcd.c", 11
+	.dbg	line, "main_lcd.c", 37
+	jmp     L0005
+	.dbg	line, "main_lcd.c", 38
+L0002:	jsr     _delay
+	tax
+	jeq     L0005
+	.dbg	line, "main_lcd.c", 39
+	ldy     #$0A
+	ldx     #$00
+	lda     #$01
+	jsr     addeqysp
+	.dbg	line, "main_lcd.c", 40
+	jsr     _lcd_clear
+	.dbg	line, "main_lcd.c", 42
+	ldy     #$0B
+	jsr     ldaxysp
+	jsr     pushax
+	lda     #$02
+	jsr     leaa0sp
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     _itoa
+	.dbg	line, "main_lcd.c", 43
 	lda     sp
 	ldx     sp+1
 	jsr     _lcd_print
-	.dbg	line, "main_lcd.c", 12
-	jsr     incsp7
+	.dbg	line, "main_lcd.c", 37
+L0005:	jmp     L0002
+	.dbg	line, "main_lcd.c", 46
+	ldy     #$0C
+	jsr     addysp
 	rts
 
 	.dbg	line
-.segment	"RODATA"
-
-M0001:
-	.byte	$48,$69,$20,$6D,$6F,$6D,$00
-
 .endproc
 
