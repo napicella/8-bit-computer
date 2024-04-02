@@ -10,7 +10,7 @@
 	.importzp	sp, sreg, regsave, regbank
 	.importzp	tmp1, tmp2, tmp3, tmp4, ptr1, ptr2, ptr3, ptr4
 	.macpack	longbranch
-	.dbg		file, "main_lcd.c", 188, 1712076585
+	.dbg		file, "main_lcd.c", 231, 1712078205
 	.dbg		file, "/home/napicella/github/cc65/include/stdint.h", 6196, 1707073946
 	.forceimport	__STARTUP__
 	.import		_lcd_init
@@ -30,20 +30,20 @@
 
 .segment	"CODE"
 
-	.dbg	line, "main_lcd.c", 7
+	.dbg	line, "main_lcd.c", 8
 	jsr     decsp7
 	ldy     #$06
 L0002:	lda     M0001,y
 	sta     (sp),y
 	dey
 	bpl     L0002
-	.dbg	line, "main_lcd.c", 9
-	jsr     _lcd_init
 	.dbg	line, "main_lcd.c", 10
+	jsr     _lcd_init
+	.dbg	line, "main_lcd.c", 11
 	lda     sp
 	ldx     sp+1
 	jsr     _lcd_print
-	.dbg	line, "main_lcd.c", 11
+	.dbg	line, "main_lcd.c", 12
 	jsr     incsp7
 	rts
 

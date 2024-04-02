@@ -1,5 +1,6 @@
 .export _lcd_init
 .export _lcd_print
+.export _lcd_clear
 
 PORTB = $8000
 DDRB = $8002
@@ -143,3 +144,20 @@ print_char:
   eor #E          ; Clear E bit
   sta PORTB
   rts
+
+
+.segment    "CODE"
+.proc    _lcd_clear: near
+; ---------------------------------------------------------------
+; void __near__ __fastcall__ lcd_clear (void)
+; ---------------------------------------------------------------
+    jsr lcd_clear
+    rts
+.endproc
+
+lcd_clear:
+    lda #%00000001 ; Clear display
+    jsr lcd_instruction
+    lda #%00000010 ; Return home
+    jsr lcd_instruction
+    rts

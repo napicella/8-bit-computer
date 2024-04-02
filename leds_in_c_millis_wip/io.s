@@ -127,10 +127,19 @@ init_counter:
   sta IER       ; enable interrupts on VIA
   cli           ; enable interrupts on CPU
 
-  lda #$FF
+ ; The counter decrements at each clock cycle. When in reaches zero
+ ; it interrupts and then restart the counter. Note the interrupt
+ ; is not sent after N clock cycle, but at N + 2.
+ ;
+ ; Here we initialize the counter to trigger every 10.000 clock cyles (10 ms).
+ ; The $2702 comes from the fact that the counter sends the interrupt 
+ ; after N + 2 cycles, which means if we want to receive an interrupt
+ ; every 10.000 cycles, we need to load the counter with 9998, or 
+ ; $2702 in hex.
+  lda #$0E
   sta T1_LOWER_ORDER_COUNT
 
-  lda #$FF
+  lda #$27
   sta T1_HIGH_ORDER_COUNT   ; load the counter and starts it
   rts
 
