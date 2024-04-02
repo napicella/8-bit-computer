@@ -117,9 +117,6 @@ init_counter:
   lda #$00      
   sta counter       ; initialize counter to zero
 
-;   lda #$ff
-;   sta PORT_B_DIR     ; set VIA port B as output
-
   lda #%01000000
   sta ACR       ; set VIA timer T1 in continuos interrupt
 
