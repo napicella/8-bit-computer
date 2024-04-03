@@ -18,10 +18,12 @@ counter:    .res 4, $00
 .segment "CODE"
 .proc _millis: near
 ; ---------------------------------------------------------------
-; void __near__ __fastcall__ millis () uint8_t
+; void __near__ __fastcall__ uint32_t millis ()
 ; ---------------------------------------------------------------
 
-    ; set return value (A low byte, X, high byte)
+    ; set return value 
+    ; low word  : (A low byte, X high byte)
+    ; high word : (sreg low byte, sreg high byte)
     
     lda counter + 2
     sta sreg

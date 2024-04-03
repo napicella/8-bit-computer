@@ -183,7 +183,7 @@ sp (zeropage.o):
     ldaxsp.o                  runtime/ldaxsp.s:8
     laddeqsp.o                runtime/laddeqsp.s:8
     itoa.o                    common/itoa.s:11
-    crt0.o                    /home/ANT.AMAZON.COM/napicell/github/cc65/asminc/zeropage.inc:11
+    crt0.o                    /home/napicella/github/cc65/asminc/zeropage.inc:11
     addysp.o                  runtime/addysp.s:8
     main.o                    main.s:10
 sreg (zeropage.o):
