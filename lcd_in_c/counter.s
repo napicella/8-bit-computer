@@ -1,3 +1,4 @@
+.importzp sreg
 .export _millis
 .export _counter_init
 .export _counter_irq
@@ -12,7 +13,7 @@ IER=$800E
 
 ; reserving space for counter in the zero page
 .zeropage
-counter:    .res 1, $00
+counter:    .res 4, $00
 
 .segment "CODE"
 .proc _millis: near
@@ -21,8 +22,15 @@ counter:    .res 1, $00
 ; ---------------------------------------------------------------
 
     ; set return value (A low byte, X, high byte)
+    
+    lda counter + 2
+    sta sreg
+    lda counter + 3
+    sta sreg+1
+
     lda counter
-    ldx #$00
+    ldx counter+1
+
     rts
 .endproc
 
@@ -68,4 +76,14 @@ _counter_irq:
   bit T1_LOWER_ORDER_COUNT  ; reset VIA interrupt (achieved by reading T1 lower).
                             ; This makes the counter restart
   inc counter
+  bne counter_exit_irq
+  inc counter + 1 
+  bne counter_exit_irq
+  inc counter + 2
+  bne counter_exit_irq
+  inc counter + 3
+  bne counter_exit_irq
+  rts
+
+counter_exit_irq:
   rts

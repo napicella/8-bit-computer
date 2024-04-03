@@ -8,11 +8,11 @@ extern void __fastcall__  lcd_init();
 extern void __fastcall__  lcd_print(char*);
 extern void __fastcall__  lcd_clear();
 extern void __fastcall__  counter_init();
-extern uint16_t __fastcall__  millis();
+extern uint32_t __fastcall__  millis();
 
 
-uint16_t lastcalled = 0;
-uint16_t current = 0;
+uint32_t lastcalled = 0;
+uint32_t current = 0;
 
 uint8_t delay() {
     current = millis();
@@ -24,7 +24,7 @@ uint8_t delay() {
 }
 
 void main(void) {
-    uint16_t time = 0;
+    uint32_t time = 0;
     char buf[10];
 
     counter_init();    
