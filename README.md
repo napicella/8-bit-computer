@@ -1,35 +1,114 @@
-Resourses for an 8 bit computer based on the 6502 microprocessor
+Resourses for an 8 bit computer based on the 6502 microprocessor.
 
 
 ### Components
-_Micro processor and memory_
-- [W65C02S Microprocessor](./datasheets/w65c02s-micro-processor.pdf)
-- [AT28C64B 64K (8K x 8) ParallelEEPROM](./datasheets/28C64-eeprom.pdf)
-
-_Peripherals_
-- [W65C22S Interface Adapter](./datasheets/W65C22S6TPG-14-interface-adapter.pdf)
-
-_Address decoding logic_
-- [74HCT14 hex inverter](./datasheets/74HC_HCT14-inverter.pdf)
-- [HD74HC11P triple input AND gate](./datasheets/HD74HC11P-triple-input-and-gate.pdf)
-
-_Clock Module (for debugging)_  
-The module is used for debugging, genereting a slow clock pulse or allowing to execute one instruction at the time
-- [555 timer](./datasheets/lm555-timer.pdf)
-- 0.1 and 1 Microfarad capacitors
-- 1K and 10K resistors
-- 1M variable resistor
-- Push buttons, switch and leds
-
-_Clock Module_
-- [1 MHz oscillator](./datasheets/1MHz-oscillator-AEL9700CS.pdf)
+Check the [datasheets](./datasheets) folder for the list of components.
 
 ### Memory mapping
-<img src="./imgs/memory-mapping.jpg" width="380">
+| Address (16 bits)     | Address (hex) | Device | Length                   |
+|-----------------------|---------------|--------|--------------------------|
+| `0`000 0000 0000 0000 | `0x0000`      | RAM    |                          |
+| `0`111 1111 1111 1111 | `0x7FFF`      | RAM    | 0x8000                   |
+| `100`0 0000 0000 0000 | `0x8000`      | VIA    |                          |
+| `100`1 1111 1111 1111 | `0x9FFF`      | VIA    | 0x1FFF                   |
+| 1010 0000 0000 0000   |               | Unused |                          |
+| 1011 1111 1111 1111   |               | Unused |                          |
+| `111`0 0000 0000 0000 | `0xE000`      | ROM    |                          |
+| `111`1 0000 0000 0000 | `0xFFFF`      | ROM    | 0x2000 = 0xFFFF-0xE000+1 |
+
+The bits highlighted in the address are part of the address decoding which 
+enable the chip.
+For example, if the most significant bit of the address is low, the RAM is enabled, if
+the three most significant bits are (100) the VIA is enabled. Address decoding is described
+later. 
+
+
+#### CPU stack (in RAM addresses)
+
+The 65c02 needs a stack for the `jsr` and `rst` instuctions (assembly subroutines).  
+The stack boundaries are set in the chip and expected to be between `0x0100` and `0x01FF`.
+The stack grows from 0x01FF (top) to 0x0100 (bottom), for a total of 265 bytes.  
+
+| Address (16 bits)   | Address (hex) | Device    | Length |
+|---------------------|---------------|-----------|--------|
+| 0000 0000 0000 0000 | `0x0000`      | RAM       |        |
+| 0000 0001 0000 0000 | `0x0100`      | RAM Stack |        |
+| 0000 0001 1111 1111 | `0x01FF`      | RAM Stack | 0xFF   |
+| 0111 1111 1111 1111 | `0x7FFF`      | RAM       | 0x8000 |
+
+
+#### VIA device
+
+The whole address space between `0x8000` and `0x9FFF` is mapped to the VIA to simplify the address decoding, but the VIA only needs the first 16 bits in that address space.
+
+| Address (hex)       | Description                          |
+|---------------------|--------------------------------------|
+| `0x8000`            | I/O Register B                       |
+| `0x8001`            | I/O Register A                       |
+| `0x8002`            | Data Direction Register B            |
+| `0x8003`            | Data Direction Register A            |
+| `0x8004`            | T1 Low Order Latches/Counter         |
+| `0x8005`            | T1 High Order Counter                |
+| `0x8006`            | T1 Low Order Latches                 |
+| `0x8007`            | T1 High Order Latches                |
+| `0x8008`            | T2 Low Order Latches/Counter         |
+| `0x8009`            | T2 High Order Counter                |
+| `0x800a`            | Shift Register                       |
+| `0x800b`            | Auxiliary Control Register           |
+| `0x800c`            | Peripheral Control Register          |
+| `0x800d`            | Interrupt Flag Register              |
+| `0x800e`            | Interrupt Enable Register            |
+| `0x800f`            | I/O Register A sans Handshake        |
+| `0x8010` - `0x9fff` | Mirrors of the sixteen VIA registers |
+
+
+### Tools
+#### Minipro
+Download [minipro 0.5](https://gitlab.com/DavidGriffith/minipro/-/releases/0.5). 
+Follow the [installation instructions](https://gitlab.com/DavidGriffith/minipro).
+
+After installing, check it works by attaching the programmer to the laptop, then run the `minipro --version`. You should see minipro recognizing the device:
+
+```
+ pactvm > minipro --version
+Supported programmers: TL866A/CS, TL866II+,T48 (experimental)
+Found TL866II+ 04.2.132 (0x284)
+Device code: 02092661
+Serial code: 5BJVT6MR20ZZJBB0JPAE
+minipro version 0.6     A free and open TL866 series programmer
+Commit date:    2024-02-11 20:34:27 -0800
+Git commit:     77c26fd2e5d8674d65382a3eff4628013483c4d2
+Git branch:     master
+TL866A/CS:      14184 devices, 44 custom
+TL866II+:       16281 devices, 45 custom
+Logic:            283 devices, 4 custom
+```
+
+__Note__: For Ubuntu 20, version 0.6 (latest as of writing fails during upload):
+```
+minipro -p AT28C64B -w kernel.bin
+Found TL866II+ 04.2.132 (0x284)
+Device code: 02092661
+Serial code: 5BJVT6MR20ZZJBB0JPAE
+Erasing... 0.02Sec OK
+Writing Code...  1.67Sec  OK
+Reading Code...  0.11Sec  OK
+Verification failed at address 0x0000: File=0x00, Device=0xFF
+make: *** [Makefile:20: install] Error 1
+```
+
+#### Install cc65
+```
+git clone https://github.com/cc65/cc65.git
+cd cc65
+make
+```
+Move the generated binaries somewhere under $PATH.
 
 
 ### Hello world
-The 8 bit computer running a simple program which turns on eight leds, first the ones in a even position and then the ones in a odd position, looping forever.
+The 8 bit computer running a simple program which turns on eight leds, first the ones in a even position and then the ones in a odd position, looping forever.  
+You do not need cc65 for the hello world.  
 
 Run:
 ```
@@ -43,22 +122,12 @@ Then connect the eeprom to the programmer and run:
 minipro -p AT28C64B -w program.bin
 ```
 
-![](./imgs/leds.gif)
-
-
 ---------------------
-## WIP
 
+## WIP
 ### Build assemly file with the cc65 compiler suite
 
-#### Install cc65
-
-```
-git clone https://github.com/cc65/cc65.git
-cd cc65
-make
-```
-Move the generated binaries somewhere under $PATH.
+You need cc65.
 
 
 #### Build blink.s
@@ -129,34 +198,6 @@ __Links__
 - https://www.reddit.com/r/beneater/comments/evis0o/6502_and_c_language/
 
 
-
-Install minipro
-```
-sudo apt-get install build-essential pkg-config git libusb-1.0-0-dev fakeroot debhelper dpkg-dev
-git clone https://gitlab.com/DavidGriffith/minipro.git
-cd minipro
-make
-sudo make install
-
-
-sudo usermod -a -G plugdev YOUR-USER
-```
-
-attach the programmer to the laptop. Run the minipro --version, you should minipro recognizing the device:
-```
- pactvm > minipro --version
-Supported programmers: TL866A/CS, TL866II+,T48 (experimental)
-Found TL866II+ 04.2.132 (0x284)
-Device code: 02092661
-Serial code: 5BJVT6MR20ZZJBB0JPAE
-minipro version 0.6     A free and open TL866 series programmer
-Commit date:    2024-02-11 20:34:27 -0800
-Git commit:     77c26fd2e5d8674d65382a3eff4628013483c4d2
-Git branch:     master
-TL866A/CS:      14184 devices, 44 custom
-TL866II+:       16281 devices, 45 custom
-Logic:            283 devices, 4 custom
-```
 
 
 ### Disassemble
