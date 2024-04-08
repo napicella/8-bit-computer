@@ -17,9 +17,9 @@
 PORTB = $8000
 DDRB = $8002
 
-UART_READ = $9005
-UART_WRITE = $9006
-UART_DATA_AVAILABLE = %1001000000000011;$9003
+UART_READ = %1001000000000010
+UART_WRITE = %1001000000000001
+UART_DATA_AVAILABLE = %1001000000000100;$9003
 
 E  = %01000000
 RW = %00100000
@@ -67,17 +67,26 @@ init:
 
 
 wait_input:
-  ; lda #%00000001
-  ; and UART_DATA_AVAILABLE
-  ; bne wait_input   ; no data available
+  lda #%00000001
+  and UART_DATA_AVAILABLE
+  bne wait_input   ; no data available
 
-  ; jmp read_uart
+  jmp read_uart
 
-  jsr print_uart
+  ; ldx #$00 
+  ; lda message,x
+  ; jsr print_char
+
+  ; ldx #$00
+  ; lda message,x
+  ; sta UART_WRITE
+
+  ldx #$00
+  jmp print_uart_loop
   jmp loop
 
 ack:
-  jsr print_uart
+  jmp print_uart
   jmp wait_input
 
 read_uart:
@@ -93,30 +102,41 @@ read_uart:
 loop:
   jmp loop
 
-print_uart_exit:
-  rts
+; print_uart_exit:
+;   rts
+
 
 print_uart:
   ldx #$00
-  jmp print_uart_loop
-  rts
-
 print_uart_loop:
-  lda #%00000010
-  and UART_DATA_AVAILABLE
-  bne print_uart_loop ; can't transfer yet cause TXE is low
-
-  lda message,x
-  beq print_uart_exit
-  sta UART_WRITE
-  inx
+  ; lda #%00000010
+  ; and UART_DATA_AVAILABLE
+  ; bne print_uart_loop ; can't transfer yet cause TXE is low
 
   ;jsr busy_wait
+
+  lda message,x
+  beq wait_input
+  sta UART_WRITE
+  inx
   
   jmp print_uart_loop
 
 ;message: .byte "my string", 0
 message: .asciiz "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+;message: .asciiz "hijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+;message: .asciiz "abdce"
+;  message: .byte %00000001
+; .byte %00000010
+; .byte %00000100
+; .byte %00001000
+; .byte %00010000
+; .byte %00100000
+; .byte %01000000
+; .byte %10000000
+; .byte %01101000  ; this is the lower case h
+; .byte %01101101  ; this is the lower case m
+; .byte %00000000
 
 lcd_wait:
   pha
