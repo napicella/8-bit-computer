@@ -9,6 +9,7 @@ extern void __fastcall__  lcd_print(char*);
 extern void __fastcall__  lcd_clear();
 extern void __fastcall__  counter_init();
 extern uint32_t __fastcall__  millis();
+extern void __fastcall__  serial_write(char*);
 
 
 uint32_t lastcalled = 0;
@@ -30,17 +31,13 @@ void main(void) {
     counter_init();    
     lcd_init();
 
-    //lcd_clear();
-    //sprintf(buf, "hello: %d", time);
-    //lcd_print(buf);
-
     while(1==1) {
         if (delay()) {
             time++;
             lcd_clear();
-            // sprintf(buf, "%d", time);
             itoa(time, buf, 10);
             lcd_print(buf);
+            serial_write(buf);
         }
     }
 }

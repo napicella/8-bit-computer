@@ -1,21 +1,39 @@
 # note: the none.lib is vended by the cc65 compiler in the /github/cc65/lib folder
 
-build-lcd:
-	rm -f main.o crt0.o io.o vectors.o interrupt.o wait.o lcd.o counter.o kernel.bin
-	cc65 -t none --cpu 65sc02 -g -o main.s main_lcd.c
+.DEFAULT_GOAL := all
+.PHONY: all install build
 
-	ca65 --cpu 65sc02 crt0.s
-	ar65 a none.lib crt0.o
+BUILD_DIR=./bin
+
+build:
+	mkdir -p $(BUILD_DIR)
+	rm -f $(BUILD_DIR)/*
+
+	# compile C code
+	cc65 -t none --cpu 65sc02 -g -o $(BUILD_DIR)/main.s main_lcd.c
+
+	# add the crt0.s to the none.lib
+	ca65 --cpu 65sc02 -o $(BUILD_DIR)/crt0.o crt0.s
+	cp none.lib $(BUILD_DIR)/
+	ar65 a $(BUILD_DIR)/none.lib $(BUILD_DIR)/crt0.o
 	
-	ca65 --cpu 65sc02 -g lcd.s
-	ca65 --cpu 65sc02 -g counter.s
-	ca65 --cpu 65sc02 vectors.s
-	ca65 --cpu 65sc02 interrupt.s
-	ca65 --cpu 65sc02 wait.s
-	ca65 --cpu 65sc02 -g main.s
+	# assemble all
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/lcd.o lcd.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/counter.o counter.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/um245.o um245.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/vectors.o vectors.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/interrupt.o interrupt.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/wait.o wait.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/main.o $(BUILD_DIR)/main.s
 	
-	ld65 -C load.cfg -m blink.map --dbgfile debug_loader -o kernel.bin interrupt.o vectors.o wait.o lcd.o counter.o main.o none.lib
+	# link them
+	ld65 -C load.cfg -m $(BUILD_DIR)/blink.map --dbgfile $(BUILD_DIR)/debug_loader -o $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/vectors.o $(BUILD_DIR)/wait.o $(BUILD_DIR)/lcd.o $(BUILD_DIR)/counter.o $(BUILD_DIR)/um245.o $(BUILD_DIR)/main.o $(BUILD_DIR)/none.lib
+
 
 install:
-	minipro -p AT28C64B -w kernel.bin
+	minipro -p AT28C64B -w $(BUILD_DIR)/kernel.bin
+
+all: build install
+
+
 

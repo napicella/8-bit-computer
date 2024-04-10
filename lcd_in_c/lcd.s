@@ -43,7 +43,7 @@ init:
 .segment    "CODE"
 .proc    _lcd_print: near
 ; ---------------------------------------------------------------
-; void __near__ __fastcall__ lcd_print (char)
+; void __near__ __fastcall__ lcd_print (char*)
 ; ---------------------------------------------------------------
     sta     _message      ;  Set zero page pointer to string address
     stx     _message+1    ;    (pointer passed in via the A/X registers)
