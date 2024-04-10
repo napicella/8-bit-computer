@@ -1,7 +1,6 @@
 build-blink-subroutines:
 	cl65 -t none -C load.cfg --cpu 65C02 --no-target-lib blink_subroutines.s
 
-
 install-blink-subroutines:
 	minipro -p AT28C64B -w blink_subroutines
 
@@ -28,3 +27,10 @@ build-lcd-4:
 
 install-lcd-4:
 	minipro -p AT28C64B -w lcd_4_pin
+
+build-lcd-4-uart:
+	cl65 -t none -C load.cfg --cpu 65SC02 --no-target-lib lcd_4_pin_uart.s
+
+install-lcd-4-uart:
+	minipro -p AT28C64B -w lcd_4_pin_uart
+
