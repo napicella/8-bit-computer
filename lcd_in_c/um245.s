@@ -1,4 +1,5 @@
 .export _serial_write
+.export _serial_read
 
 UART_WRITE  = %1001000000000001
 UART_READ   = %1001000000000010
@@ -37,4 +38,37 @@ print_uart_loop:
   jmp print_uart_loop
 
 print_uart_loop_exit:
+  rts
+
+
+.zeropage
+_value:    .res 2, $00 ;  Reserve a local zero page pointer
+
+.segment    "CODE"
+.proc    _serial_read: near
+; ---------------------------------------------------------------
+; void __near__ __fastcall__ serial_read (char*)
+; ---------------------------------------------------------------
+  sta _data       ;  Set zero page pointer to string address
+  stx _data+1     ;    (pointer passed in via the A/X registers)
+  ldy #00
+  jsr read_uart
+  rts
+.endproc
+
+read_uart:
+read_uart_loop:
+  lda #UART_READ_NO_DATA_MASK
+  and UART_STATUS
+  bne read_uart_loop        ; can't read, no data
+
+  lda UART_READ
+  beq read_uart_loop_exit   ; exit if byte received is the zero value
+
+  sta (_value),y            ;zero page address, see Post-Indexed Indirect, "(Zero-Page),Y"
+                             ; https://www.masswerk.at/6502/6502_instruction_set.html
+  iny
+  jmp read_uart_loop
+
+read_uart_loop_exit:
   rts
