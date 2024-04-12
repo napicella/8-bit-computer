@@ -1,4 +1,4 @@
-package dodosim
+package sim
 
 import "fmt"
 

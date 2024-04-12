@@ -1,61 +1,63 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
-	dodosim "github.com/peternoyes/dodo-sim"
+	"github.com/napicella/8-bit-computer/sim"
 )
 
+var imagePath string
+
 func main() {
-	bus := new(dodosim.Bus)
+	flag.StringVar(&imagePath, "i", "", "path of the image to laod in ROM")
+	flag.Parse()
+	if imagePath == "" {
+		fmt.Print("-i <rom image path> flag required \n\n")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	bus := new(sim.Bus)
 	bus.New()
 
-	ram := new(dodosim.Ram)
+	ram := new(sim.Ram)
 	bus.Add(ram)
 
-	rom := new(dodosim.Rom)
+	rom := new(sim.Rom)
 	bus.Add(rom)
 
-	acia := new(dodosim.Acia)
-	bus.Add(acia)
+	spy := new(sim.Spy)
+	bus.Add(spy)
 
-	dat, err := os.ReadFile("/home/napicella/github/8-bit-computer/leds_in_c/kernel.bin")
-	//dat, err := os.ReadFile("/home/napicella/github/8-bit-computer/ram_test_full")
+	// um245 := sim.NewUm245()
+	// bus.Add(um245)
+
+	dat, err := os.ReadFile(imagePath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	for i, b := range dat {
-		rom[i] = b
-	}
+	copy(rom[:], dat)
 
 	bus.BuildMap()
 
-	cpu := new(dodosim.Cpu)
+	cpu := new(sim.Cpu)
 	cpu.Reset(bus)
 
-	dodosim.BuildTable()
+	sim.BuildTable()
 
 	for {
-		before := cpu.PC
 		opcode := bus.Read(cpu.PC)
 
 		cpu.PC++
-		cpu.Status |= dodosim.Constant
-		dodosim.Execute(cpu, bus, opcode)
+		cpu.Status |= sim.Constant
+		sim.Execute(cpu, bus, opcode)
 
-		// fmt.Println("Press the Enter Key to continue")
-		// fmt.Scanln() // wait for Enter Key
-
-		if before == cpu.PC {
-			if cpu.PC != 13209 {
-				fmt.Printf("Failure. Trap at %b\n", cpu.PC)
-				panic("error")
-			}
+		if cpu.Status&sim.Interrupt != 0 {
+			// assuming BRK instuction
 			return
 		}
 	}
-
-	panic("loop ended")
 }

@@ -6,6 +6,7 @@
 
 .export   _init, _exit
 .import   _main
+.import   init_counter
 
 .export   __STARTUP__ : absolute = 1        ; Mark as startup
 .import   __RAM_START__, __RAM_SIZE__       ; Linker generated
@@ -43,7 +44,7 @@ _init:    LDX     #$FF                 ; Initialize stack pointer to $FF
 
 ; ---------------------------------------------------------------------------
 ; Call main()
-
+          JSR     init_counter
           JSR     _main
 
 ; ---------------------------------------------------------------------------

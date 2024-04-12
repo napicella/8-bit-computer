@@ -1,22 +1,22 @@
-package dodosim
+package sim
 
 const (
-	PORTB uint16 = 0x7F00
-	PORTA uint16 = 0x7F01
-	DDRB  uint16 = 0x7F02
-	DDRA  uint16 = 0x7F03
-	T1CL  uint16 = 0x7F04
-	T1CH  uint16 = 0x7F05
-	T1LL  uint16 = 0x7F06
-	T1LH  uint16 = 0x7F07
-	T2CL  uint16 = 0x7F08
-	T2CH  uint16 = 0x7F09
-	SR    uint16 = 0x7F0A
-	ACR   uint16 = 0x7F0B
-	PCR   uint16 = 0x7F0C
-	IFR   uint16 = 0x7F0D
-	IER   uint16 = 0x7F0E
-	ORAX  uint16 = 0x7F0F
+	PORTB uint16 = 0x8000
+	PORTA uint16 = 0x8001
+	DDRB  uint16 = 0x8002
+	DDRA  uint16 = 0x8003
+	T1CL  uint16 = 0x8004
+	T1CH  uint16 = 0x8005
+	T1LL  uint16 = 0x8006
+	T1LH  uint16 = 0x8007
+	T2CL  uint16 = 0x8008
+	T2CH  uint16 = 0x8009
+	SR    uint16 = 0x800A
+	ACR   uint16 = 0x800B
+	PCR   uint16 = 0x800C
+	IFR   uint16 = 0x800D
+	IER   uint16 = 0x800E
+	ORAX  uint16 = 0x800F
 )
 
 const (
@@ -62,7 +62,7 @@ func (v *Via) New(portA, portB Parallel, speaker Speaker) {
 }
 
 func (v *Via) Start() uint16 {
-	return 0x7F00
+	return 0x8000
 }
 
 func (v *Via) Length() uint32 {

@@ -10,197 +10,69 @@
 	.importzp	sp, sreg, regsave, regbank
 	.importzp	tmp1, tmp2, tmp3, tmp4, ptr1, ptr2, ptr3, ptr4
 	.macpack	longbranch
-	.dbg		file, "main_fast_call_with_param.c", 1022, 1709301858
+	.dbg		file, "main.c", 1031, 1709317902
 	.dbg		file, "/home/napicella/github/cc65/include/stdint.h", 6196, 1707073946
 	.forceimport	__STARTUP__
-	.import		_led
-	.export		_spin
-	.export		_pow
+	.import		_ledOff
+	.import		_ledOn
+	.import		_millis
+	.export		_lastcalled
+	.export		_current
+	.export		_delay
 	.export		_main
 
-; ---------------------------------------------------------------
-; void __near__ spin (void)
-; ---------------------------------------------------------------
+.segment	"DATA"
 
-.segment	"CODE"
-
-.proc	_spin: near
-
-	.dbg	func, "spin", "00", static, "_spin"
-	.dbg	sym, "i", "00", auto, -2
-	.dbg	sym, "j", "00", auto, -4
-
-.segment	"CODE"
-
-	.dbg	line, "main_fast_call_with_param.c", 12
-	ldx     #$00
-	lda     #$00
-	jsr     pushax
-	.dbg	line, "main_fast_call_with_param.c", 13
-	ldx     #$00
-	lda     #$00
-	jsr     pushax
-	.dbg	line, "main_fast_call_with_param.c", 15
-	jmp     L0007
-	.dbg	line, "main_fast_call_with_param.c", 16
-L0002:	ldy     #$02
-	ldx     #$00
-	lda     #$01
-	jsr     addeqysp
-	.dbg	line, "main_fast_call_with_param.c", 17
-	jmp     L0008
-	.dbg	line, "main_fast_call_with_param.c", 18
-L0006:	ldy     #$00
-	ldx     #$00
-	lda     #$01
-	jsr     addeqysp
-	.dbg	line, "main_fast_call_with_param.c", 17
-L0008:	ldy     #$01
-	jsr     ldaxysp
-	cmp     #$FF
-	txa
-	sbc     #$00
-	bvc     L0009
-	eor     #$80
-L0009:	asl     a
-	lda     #$00
-	ldx     #$00
-	rol     a
-	jne     L0006
-	.dbg	line, "main_fast_call_with_param.c", 15
-L0007:	ldy     #$03
-	jsr     ldaxysp
-	cmp     #$FF
-	txa
-	sbc     #$00
-	bvc     L0005
-	eor     #$80
-L0005:	asl     a
-	lda     #$00
-	ldx     #$00
-	rol     a
-	jne     L0002
-	.dbg	line, "main_fast_call_with_param.c", 22
-	ldx     #$00
-	lda     #$00
-	ldy     #$02
-	jsr     staxysp
-	.dbg	line, "main_fast_call_with_param.c", 23
-	ldx     #$00
-	lda     #$00
-	ldy     #$00
-	jsr     staxysp
-	.dbg	line, "main_fast_call_with_param.c", 25
-	jmp     L000F
-	.dbg	line, "main_fast_call_with_param.c", 26
-L000A:	ldy     #$02
-	ldx     #$00
-	lda     #$01
-	jsr     addeqysp
-	.dbg	line, "main_fast_call_with_param.c", 27
-	jmp     L0010
-	.dbg	line, "main_fast_call_with_param.c", 28
-L000E:	ldy     #$00
-	ldx     #$00
-	lda     #$01
-	jsr     addeqysp
-	.dbg	line, "main_fast_call_with_param.c", 27
-L0010:	ldy     #$01
-	jsr     ldaxysp
-	cmp     #$FF
-	txa
-	sbc     #$00
-	bvc     L0011
-	eor     #$80
-L0011:	asl     a
-	lda     #$00
-	ldx     #$00
-	rol     a
-	jne     L000E
-	.dbg	line, "main_fast_call_with_param.c", 25
-L000F:	ldy     #$03
-	jsr     ldaxysp
-	cmp     #$FF
-	txa
-	sbc     #$00
-	bvc     L000D
-	eor     #$80
-L000D:	asl     a
-	lda     #$00
-	ldx     #$00
-	rol     a
-	jne     L000A
-	.dbg	line, "main_fast_call_with_param.c", 31
-	jsr     incsp4
-	rts
-
-	.dbg	line
-.endproc
+_lastcalled:
+	.word	$0000
+_current:
+	.word	$0000
 
 ; ---------------------------------------------------------------
-; int __near__ pow (unsigned char x, unsigned char n)
+; unsigned char __near__ delay (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_pow: near
+.proc	_delay: near
 
-	.dbg	func, "pow", "00", static, "_pow"
-	.dbg	sym, "x", "00", auto, 1
-	.dbg	sym, "n", "00", auto, 0
-	.dbg	sym, "i", "00", auto, -1
-	.dbg	sym, "number", "00", auto, -2
+	.dbg	func, "delay", "00", static, "_delay"
 
 .segment	"CODE"
 
-	.dbg	line, "main_fast_call_with_param.c", 34
-	jsr     pusha
-	.dbg	line, "main_fast_call_with_param.c", 36
-	jsr     decsp1
-	lda     #$01
-	jsr     pusha
-	.dbg	line, "main_fast_call_with_param.c", 38
+	.dbg	line, "main.c", 14
+	jsr     _millis
+	sta     _current
+	stx     _current+1
+	.dbg	line, "main.c", 15
+	lda     _current
+	ldx     _current+1
+	jsr     pushax
+	lda     _lastcalled
+	ldx     _lastcalled+1
+	jsr     tossubax
+	cmp     #$1A
+	txa
+	sbc     #$00
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0002
+	.dbg	line, "main.c", 16
+	lda     _current
+	ldx     _current+1
+	sta     _lastcalled
+	stx     _lastcalled+1
+	.dbg	line, "main.c", 17
 	ldx     #$00
 	lda     #$00
-	ldy     #$01
-	sta     (sp),y
-L0002:	ldy     #$01
-	ldx     #$00
-	lda     (sp),y
-	jsr     pushax
-	ldy     #$04
-	ldx     #$00
-	lda     (sp),y
-	jsr     tosultax
-	jne     L0005
-	jmp     L0003
-	.dbg	line, "main_fast_call_with_param.c", 39
-L0005:	ldy     #$00
-	ldx     #$00
-	lda     (sp),y
-	jsr     pushax
-	ldy     #$05
-	ldx     #$00
-	lda     (sp),y
-	jsr     tosumulax
-	ldy     #$00
-	sta     (sp),y
-	.dbg	line, "main_fast_call_with_param.c", 38
-	ldy     #$01
-	ldx     #$00
-	clc
-	lda     #$01
-	adc     (sp),y
-	sta     (sp),y
-	jmp     L0002
-	.dbg	line, "main_fast_call_with_param.c", 41
-L0003:	ldy     #$00
-	ldx     #$00
-	lda     (sp),y
 	jmp     L0001
-	.dbg	line, "main_fast_call_with_param.c", 42
-L0001:	jsr     incsp4
-	rts
+	.dbg	line, "main.c", 19
+L0002:	ldx     #$00
+	lda     #$01
+	jmp     L0001
+	.dbg	line, "main.c", 20
+L0001:	rts
 
 	.dbg	line
 .endproc
@@ -214,56 +86,46 @@ L0001:	jsr     incsp4
 .proc	_main: near
 
 	.dbg	func, "main", "00", static, "_main"
-	.dbg	sym, "i", "00", auto, -1
+	.dbg	sym, "on", "00", auto, -1
 
 .segment	"CODE"
 
-	.dbg	line, "main_fast_call_with_param.c", 45
+	.dbg	line, "main.c", 45
 	lda     #$00
 	jsr     pusha
-	.dbg	line, "main_fast_call_with_param.c", 46
-	jmp     L0006
-	.dbg	line, "main_fast_call_with_param.c", 47
-L0002:	ldx     #$00
-	lda     #$00
-	ldy     #$00
-	sta     (sp),y
-L0005:	ldy     #$00
-	ldx     #$00
-	lda     (sp),y
-	cmp     #$08
-	jsr     boolult
-	jne     L0008
-	jmp     L0006
-	.dbg	line, "main_fast_call_with_param.c", 49
-L0008:	ldx     #$00
-	lda     #$02
-	jsr     pusha
-	ldy     #$01
-	ldx     #$00
-	lda     (sp),y
-	jsr     _pow
-	ldx     #$00
-	jsr     _led
-	.dbg	line, "main_fast_call_with_param.c", 50
-	jsr     _spin
-	.dbg	line, "main_fast_call_with_param.c", 51
-	jsr     _spin
-	.dbg	line, "main_fast_call_with_param.c", 52
-	jsr     _spin
-	.dbg	line, "main_fast_call_with_param.c", 53
-	jsr     _spin
-	.dbg	line, "main_fast_call_with_param.c", 47
+	.dbg	line, "main.c", 46
+	jmp     L0007
+	.dbg	line, "main.c", 47
+L0002:	jsr     _delay
+	cmp     #$00
+	jsr     booleq
+	jeq     L0007
+	.dbg	line, "main.c", 48
 	ldy     #$00
 	ldx     #$00
-	clc
+	lda     (sp),y
+	cmp     #$00
+	jsr     booleq
+	jeq     L0006
+	.dbg	line, "main.c", 49
+	jsr     _ledOn
+	.dbg	line, "main.c", 50
+	ldx     #$00
 	lda     #$01
-	adc     (sp),y
+	ldy     #$00
 	sta     (sp),y
-	jmp     L0005
-	.dbg	line, "main_fast_call_with_param.c", 46
-L0006:	jmp     L0002
-	.dbg	line, "main_fast_call_with_param.c", 56
+	.dbg	line, "main.c", 51
+	jmp     L0007
+	.dbg	line, "main.c", 52
+L0006:	jsr     _ledOff
+	.dbg	line, "main.c", 53
+	ldx     #$00
+	lda     #$00
+	ldy     #$00
+	sta     (sp),y
+	.dbg	line, "main.c", 46
+L0007:	jmp     L0002
+	.dbg	line, "main.c", 57
 	jsr     incsp1
 	rts
 

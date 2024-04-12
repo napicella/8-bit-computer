@@ -1,4 +1,4 @@
-package dodosim
+package sim
 
 type Space interface {
 	Start() uint16

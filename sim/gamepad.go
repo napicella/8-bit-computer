@@ -1,4 +1,4 @@
-package dodosim
+package sim
 
 type Gamepad struct {
 	U   bool

@@ -1,4 +1,4 @@
-package dodosim
+package sim
 
 import (
 	//"fmt"
@@ -356,7 +356,7 @@ func Execute(cpu *Cpu, space Space, opcode uint8) int {
 	fmt.Printf("[CPU] %s\n", o)
 	fmt.Println("Press the Enter Key to continue")
 	fmt.Scanln() // wait for Enter Key
-	
+
 	c := o.Cycles
 
 	resolve.Cpu = cpu
@@ -1059,7 +1059,29 @@ func Sax(r *Resolve) (bool, int) {
 }
 
 func Dcp(r *Resolve) (bool, int) {
-	panic("Dcp Not Implemented")
+	cpu := r.Cpu
+	val := r.Read()
+
+	var res uint16
+	val = val - 1
+	res = uint16(cpu.A) - val
+
+	if cpu.A >= uint8(val&0x00FF) {
+		cpu.SetCarry()
+
+		if cpu.A == uint8(val&0x00FF) {
+			cpu.SetZero()
+		} else {
+			cpu.ClearZero()
+		}
+	} else {
+		cpu.ClearCarry()
+		cpu.ClearZero()
+	}
+
+	cpu.SignCalc(res)
+
+	return true, 0
 }
 
 func Isb(r *Resolve) (bool, int) {

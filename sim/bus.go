@@ -1,4 +1,6 @@
-package dodosim
+package sim
+
+import "fmt"
 
 type Bus struct {
 	Devices  []Space
@@ -35,9 +37,11 @@ func (bus *Bus) BuildMap() {
 }
 
 func (bus *Bus) Read(addr uint16) uint8 {
+	fmt.Printf("%x\n", addr)
 	return bus.SpaceMap[addr].Read(addr)
 }
 
 func (bus *Bus) Write(addr uint16, val uint8) {
+	fmt.Printf("%x\n", addr)
 	bus.SpaceMap[addr].Write(addr, val)
 }
