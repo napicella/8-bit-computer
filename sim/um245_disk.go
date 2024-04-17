@@ -40,7 +40,7 @@ func (t *Um245) Start() uint16 {
 }
 
 func (t *Um245) Length() uint32 {
-	return 0x0004
+	return 0x0005
 }
 
 func (t *Um245) Read(addr uint16) uint8 {
@@ -49,10 +49,11 @@ func (t *Um245) Read(addr uint16) uint8 {
 		b, _ := t.b.ReadByte()
 		return b
 	case UART_STATUS:
+		val := 0b00000000
 		if t.b.Available() == 0 {
-			return UART_READ_NO_DATA_MASK
+			val = val & UART_READ_NO_DATA_MASK
 		}
-		return 0b00000000
+		return uint8(val)
 	default:
 		panic("invalid read address for um245")
 	}
@@ -62,27 +63,56 @@ func (t *Um245) Write(addr uint16, val uint8) {
 	if addr != UART_WRITE {
 		panic("invalid write address for um245")
 	}
+
 	t.tokenizer.submit(val)
 	if tok, found := t.tokenizer.next(); found {
-		if tok.tType == "read" {
-			sector, err := getSector(tok.data)
-			if err != nil {
-				panic(err)
-			}
-			d, err := t.disk.read(sector)
-			if err != nil {
-				panic(err)
-			}
-			_, err = t.b.Write(d)
-			if err != nil {
-				panic(err)
-			}
-			return
-		}
-		if tok.tType == "data" {
-			fmt.Printf("%s", tok.data)
-		}
+		t.handleToken(tok)
 	}
+}
+
+func (t *Um245) handleToken(tok token) {
+	if tok.tType == "read" {
+		sector, err := getSector(tok.data)
+		if err != nil {
+			panic(err)
+		}
+		d, err := t.disk.read(sector)
+		if err != nil {
+			panic(err)
+		}
+		_, err = t.b.Write(d)
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
+	if tok.tType == "write" {
+		sector, err := getSector(tok.data)
+		if err != nil {
+			panic(err)
+		}
+		c, err := getContent(tok.data)
+		if err != nil {
+			panic(err)
+		}
+		err = t.disk.write(sector, c)
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	if tok.tType == "data" {
+		fmt.Printf("%s", tok.data)
+	}
+}
+
+func getSector(data []byte) (uint8, error) {
+	return data[2], nil
+}
+
+func getContent(data []byte) ([]byte, error) {
+	return data[3 : len(data)-1], nil
 }
 
 func (t *Um245) Close() {
@@ -93,6 +123,7 @@ const (
 	startOfHeading = 0b00000001
 	endOfHeading   = 0b00000011
 	readOp         = 0b00000100
+	writeOp        = 0b00001000
 )
 
 // RD_CMD_START = <START_HEADING>R<SECTOR><END_HEADING>
@@ -104,6 +135,16 @@ const (
 var RD_CMD_START = []byte{
 	startOfHeading,
 	readOp,
+	0b00000000,
+	endOfHeading,
+}
+
+// WR_CMD_START = <START_HEADING>W<SECTOR><DATA><END_HEADING>
+// <SECTOR> - 8 bits
+var WR_CMD_START = []byte{
+	startOfHeading,
+	writeOp,
+	0b00000000,
 	0b00000000,
 	endOfHeading,
 }
@@ -133,10 +174,19 @@ func (t *tokenizer) submit(val uint8) {
 		if err != nil {
 			panic(err)
 		}
-		t.tokens = append(t.tokens, token{
-			tType: "read",
-			data:  data,
-		})
+		if data[1] == 'R' {
+			t.tokens = append(t.tokens, token{
+				tType: "read",
+				data:  data,
+			})
+			return
+		}
+		if data[1] == 'W' {
+			t.tokens = append(t.tokens, token{
+				tType: "write",
+				data:  data,
+			})
+		}
 		return
 	}
 	if t.cmdMode {
@@ -159,19 +209,14 @@ func (t *tokenizer) next() (token, bool) {
 	return head, true
 }
 
-func getSector(data []byte) (uint8, error) {
-	return data[2], nil
-}
-
 func newDisk() (*disk, error) {
 	name := filepath.Join(os.TempDir(), "disk")
 	data := make([]byte, 2048)
-	for i := 0; i < 1024; i = i + 2 {
-		data[i] = 1
-		data[i+1] = 0
+	for i := 0; i < 2048; i++ {
+		data[i] = 0xFF
 	}
 	os.WriteFile(name, data, 0666)
-	f, err := os.Open(name)
+	f, err := os.OpenFile(name, os.O_RDWR, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -189,14 +234,26 @@ func (t *disk) close() {
 }
 
 func (t *disk) read(sector uint8) ([]byte, error) {
-	_, err := t.f.Seek(int64(uint(sector)*512), 0)
+	_, err := t.f.Seek(int64(uint(sector)*255), 0)
 	if err != nil {
 		return nil, err
 	}
-	block := make([]byte, 512)
+	block := make([]byte, 255)
 	_, err = t.f.Read(block)
 	if err != nil {
 		return nil, err
 	}
 	return block, nil
+}
+
+func (t *disk) write(sector uint8, data []uint8) error {
+	_, err := t.f.Seek(int64(uint(sector)*255), 0)
+	if err != nil {
+		return err
+	}
+	_, err = t.f.Write(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -31,8 +31,11 @@ func main() {
 	spy := new(sim.Spy)
 	bus.Add(spy)
 
-	// um245 := sim.NewUm245()
-	// bus.Add(um245)
+	via := new(sim.Via)
+	bus.Add(via)
+
+	um245 := sim.NewUm245()
+	bus.Add(um245)
 
 	dat, err := os.ReadFile(imagePath)
 	if err != nil {

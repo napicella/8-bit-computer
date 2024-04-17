@@ -14,7 +14,7 @@ type Operation struct {
 }
 
 func (t *Operation) String() string {
-	return fmt.Sprintf("[CPU] %s", GetFunctionName(t.Handler))
+	return GetFunctionName(t.Handler)
 }
 
 var table [256]*Operation
@@ -353,9 +353,13 @@ func GetFunctionName(i interface{}) string {
 
 func Execute(cpu *Cpu, space Space, opcode uint8) int {
 	o := table[opcode]
-	fmt.Printf("[CPU] %s\n", o)
-	fmt.Println("Press the Enter Key to continue")
-	fmt.Scanln() // wait for Enter Key
+	fmt.Printf("[CPU] OPCODE: %04x OP: %s\n", opcode, o)
+	//fmt.Println("Press the Enter Key to continue")
+	//fmt.Scanln() // wait for Enter Key
+
+	if opcode == 0x71 {
+		fmt.Println("here")
+	}
 
 	c := o.Cycles
 
