@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include "devices.h"
 
 // Implement the Start method
@@ -52,7 +53,9 @@ void LoadFromFile(Rom *rom, const char *filepath) {
 
 Rom* CreateRom() {
     Rom* rom = malloc(sizeof(Rom));
-    LoadFromFile(rom, "/home/ANT.AMAZON.COM/napicell/github/8-bit-computer/lcd_in_c/bin/kernel.bin");
+    char file[256]; 
+    strcat(strcpy(file, getenv("HOME")), "/github/8-bit-computer/lcd_in_c/bin/kernel.bin");
+    LoadFromFile(rom, file);
 
     return rom;
 }
