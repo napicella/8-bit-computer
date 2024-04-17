@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**", 
+                "~/github/cc65/include/"
+            ],
+            "defines": [],
+            "compilerPath": "~/github/cc65/bin/cc65",
+            "cStandard": "c99",
+            "intelliSenseMode": "${default}",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        }
+    ],
+    "version": 4
+}

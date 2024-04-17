@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "stdlib.h": "c",
+        "vremu6502.h": "c",
+        "devices.h": "c",
+        "bus.h": "c",
+        "sstream": "c"
+    }
+}
