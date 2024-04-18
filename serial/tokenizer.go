@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 const (
@@ -42,33 +43,65 @@ type token struct {
 	data  []byte
 }
 
-type tokenizer struct {
-	cmdMode bool
-	cmd     bytes.Buffer
+func newTokenizer(d *disk) *tokenizer {
+	return &tokenizer{
+		cmdModeBuff: make([]uint8, 7),
+		disk:        d,
+		count:       0,
+	}
+}
 
-	tokens []token
-	disk   *disk
+type tokenizer struct {
+	cmdMode     bool
+	cmd         bytes.Buffer
+	cmdModeBuff []uint8
+
+	tokens     []token
+	disk       *disk
+	count      int
+	bytesCount int
 }
 
 func (t *tokenizer) submit(val uint8) {
-	if val == startOfHeading {
-		t.cmdMode = true
-		t.cmd.WriteByte(val)
+	_, r, _ := Shift(t.cmdModeBuff)
+	r = append(r, val)
+	t.cmdModeBuff = r
+	if slices.Compare(t.cmdModeBuff, []uint8{'c', 'm', 'd', 'm', 'o', 'd', 'e'}) == 0 {
+		t.cmdModeBuff = make([]uint8, 7)
+		t.bytesCount = 0
+		t.cmd.Reset()
+
+		if !t.cmdMode {
+			fmt.Println("entered cmd mode")
+			t.cmdMode = true
+		} else {
+			fmt.Println("exiting cmd mode")
+			t.cmdMode = false
+		}
 		return
 	}
-	if val == endOfHeading {
-		t.cmdMode = false
+	if t.cmdMode {
+		t.bytesCount++
 		t.cmd.WriteByte(val)
-		data, err := t.cmd.ReadBytes(endOfHeading)
+	}
+
+	if t.cmdMode && t.bytesCount == 516 {
+		data := make([]uint8, t.bytesCount)
+		t.bytesCount = 0
+
+		n, err := t.cmd.Read(data)
+		fmt.Printf("packet end - read %d data %v\n", n, data[:10])
 		if err != nil {
 			panic(err)
 		}
+		t.count++
+		cont, _ := getContent(data)
+		os.WriteFile(fmt.Sprintf("/tmp/write_%d", t.count), cont, 0666)
 		if data[1] == 'R' {
 			t.tokens = append(t.tokens, token{
 				tType: "read",
 				data:  data,
 			})
-			return
 		}
 		if data[1] == 'W' {
 			t.tokens = append(t.tokens, token{
@@ -76,17 +109,20 @@ func (t *tokenizer) submit(val uint8) {
 				data:  data,
 			})
 		}
-		return
-	}
-	if t.cmdMode {
-		t.cmd.WriteByte(val)
+		if data[1] != 'W' && data[1] != 'R' {
+			fmt.Println("invalid data type")
+			fmt.Printf("%v", data[:20])
+			os.Exit(0)
+		}
 		return
 	}
 
-	t.tokens = append(t.tokens, token{
-		tType: "data",
-		data:  []byte{val},
-	})
+	// if !t.cmdMode {
+	// 	t.tokens = append(t.tokens, token{
+	// 		tType: "data",
+	// 		data:  []byte{val},
+	// 	})
+	// }
 }
 
 func (t *tokenizer) next() (token, bool) {
@@ -125,6 +161,7 @@ func (t *tokenizer) handleToken(tok token, write func([]byte) error) error {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Printf("content length %d\n", len(c))
 		err = t.disk.write(sector, c)
 		if err != nil {
 			panic(err)
@@ -133,7 +170,7 @@ func (t *tokenizer) handleToken(tok token, write func([]byte) error) error {
 	}
 
 	if tok.tType == "data" {
-		fmt.Printf("%s", tok.data)
+		fmt.Printf("unrecognized data %s\n", tok.data)
 	}
 	return nil
 }
@@ -195,4 +232,14 @@ func (t *disk) write(sector uint8, data []uint8) error {
 		return err
 	}
 	return nil
+}
+
+// Shift removes the first element from s, returning false if the slice is empty.
+func Shift[S ~[]E, E any](s S) (first E, rest S, ok bool) {
+	if len(s) == 0 {
+		rest = s
+	} else {
+		first, rest, ok = s[0], s[1:], true
+	}
+	return
 }

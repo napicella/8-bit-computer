@@ -15,15 +15,13 @@ import (
 	"go.bug.st/serial"
 )
 
-var devicePath string
-
 func mainSerial() {
-	flag.StringVar(&devicePath, "d", "", "")
+	flag.StringVar(&devicePathFlag, "d", "", "")
 	flag.Parse()
 
-	if devicePath == "" {
+	if devicePathFlag == "" {
 		//log.Fatal("-d devicePath is required")
-		devicePath = "/dev/ttyUSB0"
+		devicePathFlag = "/dev/ttyUSB0"
 	}
 
 	sig := make(chan os.Signal, 1)
@@ -34,7 +32,7 @@ func mainSerial() {
 		//StopBits: 1,
 		Parity: serial.EvenParity,
 	}
-	s, err := serial.Open(devicePath, c)
+	s, err := serial.Open(devicePathFlag, c)
 	if err != nil {
 		log.Fatal(err)
 	}

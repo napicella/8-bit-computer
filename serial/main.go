@@ -2,28 +2,76 @@ package main
 
 import (
 	"errors"
+	"flag"
+	"io"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"go.bug.st/serial"
+)
+
+var (
+	devicePathFlag string
+	pipeFlag       bool
 )
 
 func main() {
+	flag.StringVar(&devicePathFlag, "d", "", "device path for serial")
+	flag.BoolVar(&pipeFlag, "p", true, "")
+	flag.Parse()
+
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	doneChan := make(chan struct{})
 
-	s, err := pipeOpen()
-	defer s.Close()
-	if err != nil {
-		log.Fatal(err)
+	if devicePathFlag != "" {
+		go func() {
+			defer close(doneChan)
+
+			c := &serial.Mode{
+				BaudRate: 115200,
+				Parity:   serial.EvenParity,
+			}
+			s, err := serial.Open(devicePathFlag, c)
+			if err != nil {
+				log.Fatal(err)
+			}
+			run(s)
+		}()
+	}
+	if devicePathFlag == "" && pipeFlag {
+		go func() {
+			defer close(doneChan)
+
+			s, err := pipeOpen()
+			defer s.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			run(s)
+		}()
 	}
 
+	for {
+		select {
+		case <-sig:
+			return
+		case <-doneChan:
+			return
+		}
+	}
+}
+
+func run(s ReaderWriter) {
 	disk, err := newDisk()
 	defer disk.close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	tokz := tokenizer{disk: disk}
+	tokz := newTokenizer(disk)
 
 	for {
 		buf := make([]byte, 128)
@@ -46,6 +94,11 @@ func main() {
 			}
 		}
 	}
+}
+
+type ReaderWriter interface {
+	io.Reader
+	io.Writer
 }
 
 type pipe struct {

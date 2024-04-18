@@ -6,7 +6,10 @@
         "string.h": "c",
         "cc65.h": "c",
         "stdint.h": "c",
-        "_heap.h": "c"
+        "_heap.h": "c",
+        "cstdint": "c",
+        "disk.h": "c",
+        "stdbool.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

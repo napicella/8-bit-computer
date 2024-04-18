@@ -2,4 +2,7 @@ build:
 	go build -o bin/serial .
 
 run: build
-	bin//serial
+	bin/serial
+
+run-serial: build
+	bin/serial -d /dev/ttyUSB0
