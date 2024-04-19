@@ -51,7 +51,7 @@ Um245* CreateUm245() {
 
 uint16_t Um245_Start() { return 0x9000; }
 
-uint32_t Um245_Length() { return 5; }
+uint32_t Um245_Length() { return 128; }
 
 uint8_t canReadFromPipe(int fd) {
   struct pollfd ufds[1]; 

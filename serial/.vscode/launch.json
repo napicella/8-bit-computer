@@ -10,7 +10,8 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["-d", "/dev/ttyUSB0"]
+            //"args": ["-d", "/dev/ttyUSB0"]
+            "args": ["-p"]
         }
     ]
 }

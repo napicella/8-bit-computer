@@ -1,67 +1,99 @@
+#include "disk.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "disk.h"
+#include <string.h>
+
 #include "um245.h"
 
-ssize_t disk_read(Disk *disk, size_t block,char *data) {
-    // RD_CMD_START = <START_HEADING>R<SECTOR><END_HEADING>
-    // <SECTOR> - 8 bits
-    // startOfHeading = 0b00000001
-	// endOfHeading   = 0b00000011
-	// readOp         = 0b00000100
-    
-    uint8_t cmd[4]; 
-    uint16_t i = 0;
-    char out;
+#define LOW(x) ((x) & 0xff)
+#define HIGH(x) ((x) >> 8)
 
-    cmd[0] = 1;
-    cmd[1] = (uint8_t)'R';
-    cmd[2] = block;
-    cmd[3] = 3;
+typedef struct Packet Packet;
+struct Packet {
+  char* magic;
+  uint16_t contentLength;
+  char* body;
+};
 
-    for (i = 0; i < 4; i++) {
-        serial_write(cmd[i]);
-    }
-    for (i = 0; i < BLOCK_SIZE; i++) {
-        //*(data + i) = serial_read_byte();
-        out = serial_read_byte();
-        data[i] = out;
-        //*((uint8_t*) 0xA000) = 1;
-    }
-    return 0;
+void sendMagic(Packet* p) {
+  char* ptr = p->magic;
+
+  while (*ptr != '\0') {
+    serial_write(*ptr);
+    ptr++;
+  }
 }
 
-ssize_t	disk_write(Disk *disk, size_t block, char *data){
-    // WR_CMD_START = <START_HEADING>W<SECTOR><DATA><END_HEADING>
-    // <SECTOR> - 8 bits
-    
-    uint8_t cmdStart[3];
-    uint8_t cmdEnd[1] = {3};
-    uint16_t i = 0;
-    uint8_t x[1] = {97};
+void sendCl(Packet* p) { 
+  serial_write(LOW(p->contentLength));
+  serial_write(HIGH(p->contentLength));
+}
 
-    cmdStart[0] = 1;
-    cmdStart[1] = (uint8_t)'W';
-    cmdStart[2] = block;
+void sendBody(Packet* p) {
+  uint16_t i = 0;
 
-    //data[0] = 'c';
-    // *((uint8_t*) 0xA001) = data[0];
-    // *((uint8_t*) 0xA001) = data[1];
-    // *((uint8_t*) 0xA001) = data[2];
-    // *((uint8_t*) 0xA001) = data[3];
+  for (i = 0; i < p->contentLength; i++) {
+    serial_write(p->body[i]);
+  }
+}
 
-    for (i = 0; i < 3; i++) {
-        serial_write(cmdStart[i]);
-    }
-    
-    for (i = 0; i < BLOCK_SIZE; i++) {
-        serial_write(data[i]);
-    }
-    
-    for (i = 0; i < 1; i++) {
-        serial_write(cmdEnd[i]);
-    }
-    
-    return 0;
+void sendPacket(Packet* p) {
+  sendMagic(p);
+  sendCl(p);
+  sendBody(p);
+}
+
+ssize_t disk_read(Disk* disk, size_t block, char* data) {
+  // RD_CMD_START = <MAGIC><SIZE>R<SECTOR>
+  // <SECTOR> - 8 bits
+
+  uint16_t i = 0;
+  uint8_t body[2];
+  Packet* packet;
+
+  packet = (Packet*)malloc(sizeof(Packet));
+  packet->magic = "cmdmode";
+  packet->contentLength = sizeof(char) + sizeof(uint8_t);
+  body[0] = (uint8_t)'R';
+  body[1] = block;
+  packet->body = body;
+
+  sendPacket(packet);
+  free(packet);
+
+  for (i = 0; i < BLOCK_SIZE; i++) {
+    data[i] = serial_read_byte();
+  }
+  return 0;
+}
+
+ssize_t disk_write(Disk* disk, size_t block, char* data) {
+  // WR_CMD_START = <MAGIC><SIZE>W<SECTOR><DATA>
+  // <SECTOR> - 8 bits
+
+  uint16_t i = 0;
+  uint8_t* body;
+  Packet* packet;
+
+  body = (uint8_t*)malloc(sizeof(char) + sizeof(uint8_t) * (BLOCK_SIZE + 2));
+  if (body == NULL) {
+    return DISK_FAILURE;
+  }
+  packet = (Packet*)malloc(sizeof(Packet));
+  if (packet == NULL) {
+    return DISK_FAILURE;
+  }
+  packet->magic = "cmdmode";
+  packet->contentLength = sizeof(char) + sizeof(uint8_t) + BLOCK_SIZE;
+  body[0] = (uint8_t)'W';
+  body[1] = block;
+  memcpy(&body[2], data, BLOCK_SIZE);
+  packet->body = body;
+
+  sendPacket(packet);
+  free(packet);
+
+  return 0;
 }

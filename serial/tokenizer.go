@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -56,73 +57,73 @@ type tokenizer struct {
 	cmd         bytes.Buffer
 	cmdModeBuff []uint8
 
-	tokens     []token
-	disk       *disk
-	count      int
-	bytesCount int
+	tokens []token
+	disk   *disk
+	count  int
+
+	state         int
+	contentLength uint16
+	bytesCount    int
 }
 
-func (t *tokenizer) submit(val uint8) {
-	_, r, _ := Shift(t.cmdModeBuff)
-	r = append(r, val)
-	t.cmdModeBuff = r
-	if slices.Compare(t.cmdModeBuff, []uint8{'c', 'm', 'd', 'm', 'o', 'd', 'e'}) == 0 {
-		t.cmdModeBuff = make([]uint8, 7)
-		t.bytesCount = 0
-		t.cmd.Reset()
+const (
+	stateMagicValue int = iota
+	stateDataSize
+	stateDataSizeSecondByte
+	stateDataRead
+)
 
-		if !t.cmdMode {
-			fmt.Println("entered cmd mode")
-			t.cmdMode = true
-		} else {
-			fmt.Println("exiting cmd mode")
-			t.cmdMode = false
+func (t *tokenizer) submit(val uint8) {
+	if t.state == stateMagicValue {
+		_, r, _ := Shift(t.cmdModeBuff)
+		r = append(r, val)
+		t.cmdModeBuff = r
+		if slices.Compare(t.cmdModeBuff, []uint8{'c', 'm', 'd', 'm', 'o', 'd', 'e'}) == 0 {
+			t.state = stateDataSize
+			t.contentLength = 0
+			t.cmdModeBuff = make([]uint8, 7)
+			t.bytesCount = 0
+			t.cmd.Reset()
+
+			return
 		}
+	}
+	if t.state == stateDataSize {
+		t.contentLength = uint16(val)
+		t.state = stateDataSizeSecondByte
 		return
 	}
-	if t.cmdMode {
+	if t.state == stateDataSizeSecondByte {
+		t.contentLength = (uint16(val) << 8) + t.contentLength
+		t.state = stateDataRead
+		return
+	}
+	if t.state == stateDataRead {
 		t.bytesCount++
 		t.cmd.WriteByte(val)
-	}
 
-	if t.cmdMode && t.bytesCount == 516 {
-		data := make([]uint8, t.bytesCount)
-		t.bytesCount = 0
+		if t.bytesCount == int(t.contentLength) {
+			t.state = stateMagicValue
 
-		n, err := t.cmd.Read(data)
-		fmt.Printf("packet end - read %d data %v\n", n, data[:10])
-		if err != nil {
-			panic(err)
-		}
-		t.count++
-		cont, _ := getContent(data)
-		os.WriteFile(fmt.Sprintf("/tmp/write_%d", t.count), cont, 0666)
-		if data[1] == 'R' {
+			data := make([]uint8, t.bytesCount)
+			t.bytesCount = 0
+
+			n, err := t.cmd.Read(data)
+			fmt.Printf("packet end - read %d data %v\n", n, data[:min(10, len(data))])
+			if err != nil {
+				panic(err)
+			}
+
+			t.count++
+			os.WriteFile(fmt.Sprintf("/tmp/write_%d", t.count), data, 0666)
+
 			t.tokens = append(t.tokens, token{
-				tType: "read",
-				data:  data,
+				data: data,
 			})
-		}
-		if data[1] == 'W' {
-			t.tokens = append(t.tokens, token{
-				tType: "write",
-				data:  data,
-			})
-		}
-		if data[1] != 'W' && data[1] != 'R' {
-			fmt.Println("invalid data type")
-			fmt.Printf("%v", data[:20])
-			os.Exit(0)
-		}
-		return
-	}
 
-	// if !t.cmdMode {
-	// 	t.tokens = append(t.tokens, token{
-	// 		tType: "data",
-	// 		data:  []byte{val},
-	// 	})
-	// }
+			return
+		}
+	}
 }
 
 func (t *tokenizer) next() (token, bool) {
@@ -134,66 +135,28 @@ func (t *tokenizer) next() (token, bool) {
 	return head, true
 }
 
-func (t *tokenizer) handleToken(tok token, write func([]byte) error) error {
-	if tok.tType == "read" {
-		fmt.Println("reading from disk")
-		sector, err := getSector(tok.data)
-		if err != nil {
-			panic(err)
-		}
-		d, err := t.disk.read(sector)
-		if err != nil {
-			panic(err)
-		}
-		err = write(d)
-		if err != nil {
-			panic(err)
-		}
-		return nil
-	}
-	if tok.tType == "write" {
-		fmt.Println("writing to disk")
-		sector, err := getSector(tok.data)
-		if err != nil {
-			panic(err)
-		}
-		c, err := getContent(tok.data)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("content length %d\n", len(c))
-		err = t.disk.write(sector, c)
-		if err != nil {
-			panic(err)
-		}
-		return nil
-	}
-
-	if tok.tType == "data" {
-		fmt.Printf("unrecognized data %s\n", tok.data)
-	}
-	return nil
-}
-
-func getSector(data []byte) (uint8, error) {
-	return data[2], nil
-}
-
-func getContent(data []byte) ([]byte, error) {
-	return data[3 : len(data)-1], nil
-}
-
 func newDisk() (*disk, error) {
 	name := filepath.Join(os.TempDir(), "disk")
-	data := make([]byte, 2048)
-	for i := 0; i < 2048; i++ {
-		data[i] = 0xFF
+	var shouldInitialize bool
+	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
+		shouldInitialize = true
 	}
-	os.WriteFile(name, data, 0666)
-	f, err := os.OpenFile(name, os.O_RDWR, 0666)
+	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
 	}
+
+	if shouldInitialize {
+		data := make([]byte, 2048)
+		for i := 0; i < 2048; i++ {
+			data[i] = 0xFF
+		}
+		_, err := f.Write(data)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &disk{
 		f: f,
 	}, nil

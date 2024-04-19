@@ -3,6 +3,7 @@
 .DEFAULT_GOAL := all
 .PHONY: all install build
 
+export PATH := $(HOME)/github/cc65/bin:$(PATH)
 BUILD_DIR=./bin
 
 build:

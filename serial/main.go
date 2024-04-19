@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -44,7 +45,6 @@ func main() {
 	if devicePathFlag == "" && pipeFlag {
 		go func() {
 			defer close(doneChan)
-
 			s, err := pipeOpen()
 			defer s.Close()
 			if err != nil {
@@ -82,18 +82,60 @@ func run(s ReaderWriter) {
 		for i := 0; i < n; i++ {
 			tokz.submit(buf[i])
 			if tok, found := tokz.next(); found {
-				tokz.handleToken(tok, func(b []byte) error {
-					for _, v := range b {
-						_, err = s.Write([]byte{byte(v)})
-						if err != nil {
-							log.Fatal(err)
-						}
-					}
-					return nil
-				})
+				handleToken(tok, disk, s)
 			}
 		}
 	}
+}
+
+func handleToken(tok token, disk *disk, s ReaderWriter) {
+	data := tok.data
+
+	if data[0] == 'R' {
+		fmt.Println("reading from disk")
+		sector, err := getSector(tok.data)
+		if err != nil {
+			panic(err)
+		}
+		d, err := disk.read(sector)
+		if err != nil {
+			panic(err)
+		}
+		_, err = s.Write(d)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if data[0] == 'W' {
+		fmt.Println("writing to disk")
+		sector, err := getSector(tok.data)
+		if err != nil {
+			panic(err)
+		}
+		c, err := getContent(tok.data)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("content length %d\n", len(c))
+		err = disk.write(sector, c)
+		if err != nil {
+			panic(err)
+		}
+
+	}
+	if data[0] != 'W' && data[0] != 'R' {
+		fmt.Println("invalid data type")
+		fmt.Printf("%v", data[:min(20, len(data))])
+		os.Exit(0)
+	}
+}
+
+func getSector(data []byte) (uint8, error) {
+	return data[1], nil
+}
+
+func getContent(data []byte) ([]byte, error) {
+	return data[2:], nil
 }
 
 type ReaderWriter interface {

@@ -79,10 +79,9 @@ read_uart_loop_exit:
 .segment    "CODE"
 .proc    _serial_read_byte: near
 ; ---------------------------------------------------------------
-; void __near__ __fastcall__ char serial_read ()
+; void __near__ __fastcall__ char serial_read_byte ()
 ; ---------------------------------------------------------------
-  ;jsr read_uart_byte
-  lda #$FF
+  jsr read_uart_byte
   rts
 .endproc
 
@@ -95,5 +94,5 @@ read_uart_byte_loop:
   ; set return value 
   ; low word  : (A low byte, X high byte)
   lda UART_READ
-  ;ldx #$00
+  ldx #$00
   rts
