@@ -184,20 +184,88 @@ __Links__
 - https://github.com/caseywdunn/eater_6502?tab=readme-ov-file
 - https://www.grappendorf.net/projects/6502-home-computer/software-development.html
 - https://www.masswerk.at/6502/6502_instruction_set.html#STA
+- 65xx timing diagrams - https://laughtonelectronics.com/Arcana/Visualizing%2065xx%20Timing/Visualizing%2065xx%20CPU%20Timing.html
 - https://github.com/peternoyes/dodo-sim
 - https://mike42.me/blog/2021-07-adding-a-serial-port-to-my-6502-computer
 - utils in asm and C for cc65 - https://github.com/tisnik/8bit-fame/tree/master/cc65
 - https://github.com/SleepingInsomniac/6502-Breadboard-Computer
 - https://cc65.github.io/doc/intro.html
 - https://forums.atariage.com/topic/296494-calling-asm-proc-from-c/
-- https://github.com/dbuchwald/6502/blob/master/Software/rom/04_blink_s/blink.s
+- https://github.com/dbuchwald/6502
 - https://github.com/sethm/symon
 - https://stackoverflow.com/questions/10595467/org-assembly-directive-and-location-counter-in-linker-script
 - https://cc65.github.io/doc/
 - https://www.tejotron.com/
 - https://www.reddit.com/r/beneater/comments/evis0o/6502_and_c_language/
+- wozmon - https://gist.github.com/beneater/8136c8b7f2fd95ccdd4562a498758217/revisions
+- wozmon instructions - https://youtu.be/HlLCtjJzHVI?si=5ztiLEWpOD5SaC5g
+- msbasic - https://github.com/beneater/msbasic/commit/a15c8e0fdf620c800913cbb709df4042ab5c8dad
 
+### How to have ca65 output as raw binary
+__You can't.__
 
+From: https://www.reddit.com/r/beneater/comments/mm3m9s/how_to_have_ca65_output_as_raw_binary/
+
+Simple assemblers convert assembler source code file(s) directly into a final binary output file in one step.
+
+More complex development systems convert each source code file into an intermediary object code file, then a linker/locater pulls together and converts all object files into one target binary file. All linkers require some type of configuration file that tells it where your RAM and ROM (aka Flash) memory is located, unless it has some known assumptions about the final target. Though more complicated, this approach is a lot more flexible, because this concept supports any combination of assemblers and compilers that creates the same object code.
+
+Currently this development system only supports assembler and C, but theoretically new compilers could be created for other high-level computer languages too. As long as future compilers create compatible object files then LD65 should be able to support them too.
+
+From a generic point of view of these concepts, there are plenty of books about this subject matter, and likely lots of stuff written about it on the internet. I'll leave it up to you to further investigate and educate yourself. Good luck.
+
+```
+C Source Code Files(s) ---> CC65 [compiler] ---> Object Code File(s)
+Assembler Source Code File(s) ---> CA65 [assembler] ---> Object Code File(s)
+Object Code File(s) and optional Libraries ---> LD65 [linker] and Config File ---> Binary or Hex File
+Binary or Hex File ---> Chip Programmer Tool ---> ROM/Flash/EEPROM chip
+```
+
+#### ORG directive and VASM
+
+Note that ca65 do not handle the org directive as other assemblers for 6502.
+
+From: https://wiki.cc65.org/doku.php?id=cc65:the_.org_directive
+
+> Most other assemblers for the 6502 handle .ORG different than ca65. The reason is, that these tools usually do not use a linker. Professional development systems separate the job of the assembler and the linker to gain more flexibility and to implement features not possible with just one tool.  
+>
+>
+> If you don't have a separate linker, the assembler is responsible for code translation and code placement. With such an assembler, you use the .ORG directive to place your code at a specific address.
+
+For example:
+```
+  .org $0000
+  NOP
+  .org $FFFF
+  NOP
+```
+When compiled:
+
+```
+ca65 --cpu 65sc02 -o sample.o sample.s
+ld65 -t none -o sample sample.o
+```
+
+Produces a 2 bytes ROM image, instead of 64K:
+```
+> ls -lha ./sample
+-rw-r--r-- 1 user domain^users 2 Apr 20 23:19 ./sample
+``` 
+
+vasm on the other hand for the same program produces 64K:
+```
+> /tmp/vasm/vasm6502_oldstyle -Fbin -dotdir -o binary.out sample.s
+...
+
+> -rw-r--r-- 1 napicell domain^users 64K Apr 20 23:25 ./binary.out
+
+> hexdump -C binary.out 
+00000000  ea 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+0000fff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 ea  |................|
+00010000
+```
 
 
 ### Disassemble

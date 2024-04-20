@@ -54,7 +54,8 @@ void LoadFromFile(Rom *rom, const char *filepath) {
 Rom* CreateRom() {
     Rom* rom = malloc(sizeof(Rom));
     char file[256]; 
-    strcat(strcpy(file, getenv("HOME")), "/github/8-bit-computer/lcd_in_c_supervisor/bin/kernel.bin");
+    //strcat(strcpy(file, getenv("HOME")), "/github/8-bit-computer/lcd_in_c_supervisor/bin/kernel.bin");
+    strcat(strcpy(file, getenv("HOME")), "/github/8-bit-computer/wozmon");
     LoadFromFile(rom, file);
 
     return rom;

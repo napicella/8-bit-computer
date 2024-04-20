@@ -1,3 +1,5 @@
+export PATH := $(HOME)/github/cc65/bin:$(PATH)
+
 build-blink-subroutines:
 	cl65 -t none -C load.cfg --cpu 65C02 --no-target-lib blink_subroutines.s
 
@@ -33,4 +35,10 @@ build-lcd-4-uart:
 
 install-lcd-4-uart:
 	minipro -p AT28C64B -w lcd_4_pin_uart
+
+build-wozmon:
+	cl65 -t none -C wozmon.cfg --cpu 65SC02 --no-target-lib wozmon.s
+
+install-wozmon:
+	minipro -p AT28C64B --no_size_error -w wozmon
 
