@@ -1,3 +1,13 @@
+# Connect the VIA port B (PB0 to PB7) to the LCD.
+# The PB7 (most significant bit) is unused, though the code sets it as output for convenience
+# PB0 -> D4
+# PB1 -> D5
+# PB2 -> D6
+# PB3 -> D7
+# PB4 -> RS
+# PB5 -> RW
+# PB6 -> E
+
 .export _lcd_init
 .export _lcd_print
 .export _lcd_clear
