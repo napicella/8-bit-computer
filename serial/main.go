@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/containerd/console"
 	"go.bug.st/serial"
 )
 
@@ -20,49 +21,123 @@ var (
 
 func main() {
 	flag.StringVar(&devicePathFlag, "d", "", "device path for serial")
-	flag.BoolVar(&pipeFlag, "p", true, "")
+	flag.BoolVar(&pipeFlag, "p", false, "use a pipe for I/O")
 	flag.Parse()
+
+	if devicePathFlag == "" && !pipeFlag {
+		log.Fatal("one of [-d -p] must be specified")
+	}
+	if devicePathFlag != "" && pipeFlag {
+		log.Fatal("only one of [-d -p] must be specified")
+	}
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	doneChan := make(chan struct{})
+	mainDoneChan := make(chan struct{})
 
-	if devicePathFlag != "" {
-		go func() {
-			defer close(doneChan)
-
-			c := &serial.Mode{
-				BaudRate: 115200,
-				Parity:   serial.EvenParity,
+	go func() {
+		for {
+			select {
+			case <-sig:
+				close(mainDoneChan)
+				return
+			case <-doneChan:
+				close(mainDoneChan)
+				return
 			}
-			s, err := serial.Open(devicePathFlag, c)
-			if err != nil {
-				log.Fatal(err)
-			}
-			run(s)
-		}()
-	}
-	if devicePathFlag == "" && pipeFlag {
-		go func() {
-			defer close(doneChan)
-			s, err := pipeOpen()
-			defer s.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			run(s)
-		}()
-	}
-
-	for {
-		select {
-		case <-sig:
-			return
-		case <-doneChan:
-			return
 		}
+	}()
+
+	s, err := getDevice()
+	if err != nil {
+		log.Fatal(err)
 	}
+	c, err := getConsole()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		c.Reset()
+		c.Close()
+	}()
+
+	go func() {
+		defer close(doneChan)
+		defer s.Close()
+		run(s)
+	}()
+
+	go func() {
+		buf := make([]byte, 128)
+
+		for {
+			n, err := os.Stdin.Read(buf)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			if n >= 1 && buf[0] == 3 {
+				// 3 -> CTRL + C
+				// terminate program
+				sig <- syscall.SIGINT
+				return
+			}
+			for i := 0; i < n; i++ {
+				b := buf[i]
+				if b == '\n' {
+					s.Write([]byte{'\r', '\n'})
+				} else {
+					s.Write([]byte{b})
+				}
+			}
+		}
+	}()
+
+	<-mainDoneChan
+}
+
+func getDevice() (ReaderWriter, error) {
+	if devicePathFlag != "" {
+		c := &serial.Mode{
+			BaudRate: 115200,
+			Parity:   serial.EvenParity,
+		}
+		s, err := serial.Open(devicePathFlag, c)
+		if err != nil {
+			return nil, err
+		}
+		return s, nil
+	}
+	if pipeFlag {
+		s, err := pipeOpen()
+		if err != nil {
+			return nil, err
+		}
+		return s, nil
+	}
+	return nil, errors.New("no device available")
+}
+
+func getConsole() (c console.Console, err error) {
+	c = console.Current()
+	defer func() {
+		if err != nil {
+			c.Reset()
+			c.Close()
+		}
+	}()
+	err = c.SetRaw()
+	if err != nil {
+		return
+	}
+	var ws console.WinSize
+	ws, err = c.Size()
+	if err != nil {
+		return
+	}
+	err = c.Resize(ws)
+	return
 }
 
 func run(s ReaderWriter) {
@@ -71,7 +146,7 @@ func run(s ReaderWriter) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	tokz := newTokenizer(disk)
+	tokz := newTokenizer()
 
 	for {
 		buf := make([]byte, 128)
@@ -83,6 +158,13 @@ func run(s ReaderWriter) {
 			tokz.submit(buf[i])
 			if tok, found := tokz.next(); found {
 				handleToken(tok, disk, s)
+			}
+			b, err := tokz.data()
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, v := range b {
+				fmt.Printf("%s", string(v))
 			}
 		}
 	}
@@ -141,6 +223,7 @@ func getContent(data []byte) ([]byte, error) {
 type ReaderWriter interface {
 	io.Reader
 	io.Writer
+	io.Closer
 }
 
 type pipe struct {

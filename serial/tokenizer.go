@@ -4,62 +4,30 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
-	"slices"
 )
-
-const (
-	startOfHeading = 0b00000001
-	endOfHeading   = 0b00000011
-	readOp         = 0b00000100
-	writeOp        = 0b00001000
-)
-
-// RD_CMD_START = <START_HEADING>R<SECTOR><END_HEADING>
-// <SECTOR> - 8 bits
-//
-// MCU   -> UM245 (RD_CMD_START)
-// UM245 -> PC
-// PC    -> UM245 (<DATA>)
-var RD_CMD_START = []byte{
-	startOfHeading,
-	readOp,
-	0b00000000,
-	endOfHeading,
-}
-
-// WR_CMD_START = <START_HEADING>W<SECTOR><DATA><END_HEADING>
-// <SECTOR> - 8 bits
-var WR_CMD_START = []byte{
-	startOfHeading,
-	writeOp,
-	0b00000000,
-	0b00000000,
-	endOfHeading,
-}
 
 type token struct {
-	tType string
-	data  []byte
+	data []byte
 }
 
-func newTokenizer(d *disk) *tokenizer {
+func newTokenizer() *tokenizer {
 	return &tokenizer{
-		cmdModeBuff: make([]uint8, 7),
-		disk:        d,
-		count:       0,
+		tokenStart: [7]uint8{'c', 'm', 'd', 'm', 'o', 'd', 'e'},
 	}
 }
 
 type tokenizer struct {
-	cmdMode     bool
-	cmd         bytes.Buffer
-	cmdModeBuff []uint8
+	tokenStart  [7]uint8
+	currToMatch int
+
+	tokenData         bytes.Buffer
+	textData          bytes.Buffer
+	potentialTextData bytes.Buffer
 
 	tokens []token
-	disk   *disk
-	count  int
 
 	state         int
 	contentLength uint16
@@ -75,15 +43,26 @@ const (
 
 func (t *tokenizer) submit(val uint8) {
 	if t.state == stateMagicValue {
-		_, r, _ := Shift(t.cmdModeBuff)
-		r = append(r, val)
-		t.cmdModeBuff = r
-		if slices.Compare(t.cmdModeBuff, []uint8{'c', 'm', 'd', 'm', 'o', 'd', 'e'}) == 0 {
+		t.potentialTextData.WriteByte(val)
+
+		if val != t.tokenStart[t.currToMatch] {
+			b, err := io.ReadAll(&t.potentialTextData)
+			if err != nil {
+				panic(err)
+			}
+			t.textData.Write(b)
+			t.potentialTextData.Reset()
+			// reset character to match
+			t.currToMatch = 0
+			return
+		}
+		t.currToMatch++
+		if t.currToMatch > len(t.tokenStart) {
+			t.currToMatch = 0
 			t.state = stateDataSize
 			t.contentLength = 0
-			t.cmdModeBuff = make([]uint8, 7)
 			t.bytesCount = 0
-			t.cmd.Reset()
+			t.tokenData.Reset()
 
 			return
 		}
@@ -100,7 +79,7 @@ func (t *tokenizer) submit(val uint8) {
 	}
 	if t.state == stateDataRead {
 		t.bytesCount++
-		t.cmd.WriteByte(val)
+		t.tokenData.WriteByte(val)
 
 		if t.bytesCount == int(t.contentLength) {
 			t.state = stateMagicValue
@@ -108,14 +87,11 @@ func (t *tokenizer) submit(val uint8) {
 			data := make([]uint8, t.bytesCount)
 			t.bytesCount = 0
 
-			n, err := t.cmd.Read(data)
+			n, err := t.tokenData.Read(data)
 			fmt.Printf("packet end - read %d data %v\n", n, data[:min(10, len(data))])
 			if err != nil {
 				panic(err)
 			}
-
-			t.count++
-			os.WriteFile(fmt.Sprintf("/tmp/write_%d", t.count), data, 0666)
 
 			t.tokens = append(t.tokens, token{
 				data: data,
@@ -133,6 +109,10 @@ func (t *tokenizer) next() (token, bool) {
 	head := t.tokens[0]
 	t.tokens = t.tokens[1:]
 	return head, true
+}
+
+func (t *tokenizer) data() ([]byte, error) {
+	return io.ReadAll(&t.textData)
 }
 
 func newDisk() (*disk, error) {
@@ -195,14 +175,4 @@ func (t *disk) write(sector uint8, data []uint8) error {
 		return err
 	}
 	return nil
-}
-
-// Shift removes the first element from s, returning false if the slice is empty.
-func Shift[S ~[]E, E any](s S) (first E, rest S, ok bool) {
-	if len(s) == 0 {
-		rest = s
-	} else {
-		first, rest, ok = s[0], s[1:], true
-	}
-	return
 }
