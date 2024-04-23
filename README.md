@@ -79,7 +79,7 @@ The whole address space between `0x9000` and `0x9FFF` is mapped to the UM245 to 
 
 The UM245 contains an internal bidirectional FIFO buffer, decoupling the communication.  
 The Status address allows to check if the device is ready to accept data (MCU can write) and
-if the device has data to be read (MCU can read). If the device is busy for a write, the Status contains a 1 in the 1st bit (LSB). If the device does not have data to be read, the Status contains a 1 in the 2st bit (LSB).
+if the device has data to be read (MCU can read). If the device is busy for a write, the Status contains a 1 in the 1st bit (LSB). If the device does not have data to be read, the Status contains a 1 in the 2nd bit (LSB).
 
 Example assembly routine to read one byte of data:
 ```asm
