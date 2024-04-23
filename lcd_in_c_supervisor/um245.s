@@ -15,7 +15,7 @@ _data:    .res 2, $00 ;  Reserve a local zero page pointer
 .segment    "CODE"
 .proc    _serial_write: near
 ; ---------------------------------------------------------------
-; void __near__ __fastcall__ serial_write (char*)
+; void __near__ __fastcall__ serial_write (char)
 ; ---------------------------------------------------------------
   ;sta _data       ;  Set zero page pointer to string address
   ;stx _data+1     ;    (pointer passed in via the A/X registers)

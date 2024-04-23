@@ -83,14 +83,7 @@ func main() {
 				sig <- syscall.SIGINT
 				return
 			}
-			for i := 0; i < n; i++ {
-				b := buf[i]
-				if b == '\n' {
-					s.Write([]byte{'\r', '\n'})
-				} else {
-					s.Write([]byte{b})
-				}
-			}
+			s.Write(buf[:n])
 		}
 	}()
 
@@ -152,6 +145,9 @@ func run(s ReaderWriter) {
 		buf := make([]byte, 128)
 		n, err := s.Read(buf)
 		if err != nil {
+			if err == io.EOF {
+				return
+			}
 			log.Fatal(err)
 		}
 		for i := 0; i < n; i++ {

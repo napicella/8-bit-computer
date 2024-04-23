@@ -36,7 +36,7 @@ build:
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/main.o $(BUILD_DIR)/main.s
 	
 	# link them
-	ld65 -C load.cfg -m $(BUILD_DIR)/blink.map --dbgfile $(BUILD_DIR)/debug_loader \
+	ld65 -C load.cfg -Ln $(BUILD_DIR)/kernel.lbl -m $(BUILD_DIR)/blink.map --dbgfile $(BUILD_DIR)/debug_loader \
 	  -o $(BUILD_DIR)/kernel.bin \
 	  $(BUILD_DIR)/interrupt.o \
 	  $(BUILD_DIR)/vectors.o \
