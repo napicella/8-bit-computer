@@ -1,4 +1,4 @@
-Resourses for an 8 bit computer based on the 6502 microprocessor.
+Resources for an 8 bit computer based on the 6502 microprocessor.
 
 
 ### Components
@@ -9,10 +9,12 @@ Check the [datasheets](./datasheets) folder for the list of components.
 |-----------------------|---------------|--------|--------------------------|
 | `0`000 0000 0000 0000 | `0x0000`      | RAM    |                          |
 | `0`111 1111 1111 1111 | `0x7FFF`      | RAM    | 0x8000                   |
-| `100`0 0000 0000 0000 | `0x8000`      | VIA    |                          |
-| `100`1 1111 1111 1111 | `0x9FFF`      | VIA    | 0x1FFF                   |
-| 1010 0000 0000 0000   |               | Unused |                          |
-| 1011 1111 1111 1111   |               | Unused |                          |
+| `1000` 0000 0000 0000 | `0x8000`      | VIA    |                          |
+| `1000` 1111 1111 1111 | `0x8FFF`      | VIA    | 0xFFF                    |
+| `1001` 0000 0000 0000 | `0x9000`      | UM245  |                          |
+| `1001` 1111 1111 1111 | `0x9FFF`      | UM245  | 0xFFF                    |
+|  1010 0000 0000 0000  |               | Unused |                          |
+|  1011 1111 1111 1111  |               | Unused |                          |
 | `111`0 0000 0000 0000 | `0xE000`      | ROM    |                          |
 | `111`1 0000 0000 0000 | `0xFFFF`      | ROM    | 0x2000 = 0xFFFF-0xE000+1 |
 
@@ -25,7 +27,7 @@ later.
 
 #### CPU stack (in RAM addresses)
 
-The 65c02 needs a stack for the `jsr` and `rst` instuctions (assembly subroutines).  
+The 65c02 needs a stack for the `jsr` and `rst` instructions (assembly subroutines).  
 The stack boundaries are set in the chip and expected to be between `0x0100` and `0x01FF`.
 The stack grows from 0x01FF (top) to 0x0100 (bottom), for a total of 265 bytes.  
 
@@ -39,7 +41,7 @@ The stack grows from 0x01FF (top) to 0x0100 (bottom), for a total of 265 bytes.
 
 #### VIA device
 
-The whole address space between `0x8000` and `0x9FFF` is mapped to the VIA to simplify the address decoding, but the VIA only needs the first 16 bits in that address space.
+The whole address space between `0x8000` and `0x9FFF` is mapped to the VIA to simplify the address decoding, but the VIA only needs the first 16 bytes in that address space.
 
 | Address (hex)       | Description                          |
 |---------------------|--------------------------------------|
@@ -59,8 +61,47 @@ The whole address space between `0x8000` and `0x9FFF` is mapped to the VIA to si
 | `0x800d`            | Interrupt Flag Register              |
 | `0x800e`            | Interrupt Enable Register            |
 | `0x800f`            | I/O Register A sans Handshake        |
-| `0x8010` - `0x9fff` | Mirrors of the sixteen VIA registers |
+| `0x8010` - `0x8fff` | Mirrors of the sixteen VIA registers |
 
+
+#### UM245 device
+The whole address space between `0x9000` and `0x9FFF` is mapped to the UM245 to simplify the address decoding, but the UM245 only needs the 3 bytes in that address space.
+
+| Address (hex)       | Description |
+|---------------------|-------------|
+| `0x9000`            | Unused      |
+| `0x9001`            | Write       |
+| `0x9002`            | Read        |
+| `0x9003`            | Unused      |
+| `0x9004`            | Status      |
+| `0x9005` - `0x900f` | Unused      |
+| `0x9010` - `0x9fff` | Mirrors     |
+
+The UM245 contains an internal bidirectional FIFO buffer, decoupling the communication.  
+The Status address allows to check if the device is ready to accept data (MCU can write) and
+if the device has data to be read (MCU can read). If the device is busy for a write, the Status contains a 1 in the 1st bit (LSB). If the device does not have data to be read, the Status contains a 1 in the 2st bit (LSB).
+
+Example assembly routine to read one byte of data:
+```asm
+UART_WRITE  = $9001
+UART_READ   = $9002
+UART_STATUS = $9004
+
+UART_WRITE_BUSY_MASK   = %00000001
+UART_READ_NO_DATA_MASK = %00000010
+
+read_uart_byte:
+read_uart_byte_loop:
+  lda #UART_READ_NO_DATA_MASK
+  and UART_STATUS
+  bne read_uart_byte_loop        ; can't read, no data
+
+  ; set return value 
+  ; low word  : (A low byte, X high byte)
+  lda UART_READ
+  ldx #$00
+  rts
+```
 
 ### Tools
 #### Minipro
@@ -69,8 +110,8 @@ Follow the [installation instructions](https://gitlab.com/DavidGriffith/minipro)
 
 After installing, check it works by attaching the programmer to the laptop, then run the `minipro --version`. You should see minipro recognizing the device:
 
-```
- pactvm > minipro --version
+```bash
+> minipro --version
 Supported programmers: TL866A/CS, TL866II+,T48 (experimental)
 Found TL866II+ 04.2.132 (0x284)
 Device code: 02092661
@@ -85,7 +126,7 @@ Logic:            283 devices, 4 custom
 ```
 
 __Note__: For Ubuntu 20, version 0.6 (latest as of writing fails during upload):
-```
+```bash
 minipro -p AT28C64B -w kernel.bin
 Found TL866II+ 04.2.132 (0x284)
 Device code: 02092661
@@ -98,7 +139,7 @@ make: *** [Makefile:20: install] Error 1
 ```
 
 #### Install cc65
-```
+```bash
 git clone https://github.com/cc65/cc65.git
 cd cc65
 make
@@ -111,21 +152,21 @@ The 8 bit computer running a simple program which turns on eight leds, first the
 You do not need cc65 for the hello world.  
 
 Run:
-```
+```bash
 python blink-leds.py
 ```
 
 which generates the image for the ROM in the file `program.bin`.  
 Then connect the eeprom to the programmer and run:
 
-```
+```bash
 minipro -p AT28C64B -w program.bin
 ```
 
 ---------------------
 
 ## WIP
-### Build assemly file with the cc65 compiler suite
+### Build assembly file with the cc65 compiler suite
 
 You need cc65.
 
