@@ -57,7 +57,8 @@ func (t *tokenizer) submit(val uint8) {
 			return
 		}
 		t.currToMatch++
-		if t.currToMatch > len(t.tokenStart) {
+		if t.currToMatch == len(t.tokenStart) {
+			t.potentialTextData.Reset()
 			t.currToMatch = 0
 			t.state = stateDataSize
 			t.contentLength = 0
@@ -115,6 +116,13 @@ func (t *tokenizer) data() ([]byte, error) {
 	return io.ReadAll(&t.textData)
 }
 
+const (
+	blockSize      = 512
+	numberOfBlocks = 500
+)
+
+var diskSize = blockSize * numberOfBlocks
+
 func newDisk() (*disk, error) {
 	name := filepath.Join(os.TempDir(), "disk")
 	var shouldInitialize bool
@@ -127,8 +135,8 @@ func newDisk() (*disk, error) {
 	}
 
 	if shouldInitialize {
-		data := make([]byte, 2048)
-		for i := 0; i < 2048; i++ {
+		data := make([]byte, diskSize)
+		for i := 0; i < diskSize; i++ {
 			data[i] = 0xFF
 		}
 		_, err := f.Write(data)
@@ -141,8 +149,6 @@ func newDisk() (*disk, error) {
 		f: f,
 	}, nil
 }
-
-const blockSize = 512
 
 type disk struct {
 	f *os.File

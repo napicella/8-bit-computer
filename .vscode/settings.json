@@ -13,5 +13,9 @@
         "um245.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled",
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cSpell.words": [
+        "writebyte",
+        "writeline"
+    ]
 }

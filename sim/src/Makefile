@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := run
+
 CC = gcc
 CFLAGS = -g -Wall -Wextra -std=c99 -I../modules/vrEmu6502/src
 LDFLAGS = -L../modules/vrEmu6502/bin/src -lvrEmu6502

@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := run-pipe
+
 build:
 	go build -o bin/serial .
 
