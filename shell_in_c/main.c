@@ -1,15 +1,13 @@
 #include <_heap.h>
-#include <cc65.h>
-#include <stdint.h>
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "disk.h"
 #include "fs.h"
 #include "lcd.h"
 #include "um245.h"
-// #include "io.h"
+#include "io.h"
 
 extern uint16_t __fastcall__ wozmon_address();
 extern uint16_t __fastcall__ wozmon_run();
@@ -20,9 +18,6 @@ FileSystem* fs;
 void info();
 void shell_fs_print_info();
 void shell_fs_create();
-// void shell_led_on();
-// void shell_led_off();
-void sampleString();
 
 void main(void) {
   char motd[] = "*\n**\n**** pactvm6502 v0.1\n**\n*\n";
@@ -49,26 +44,26 @@ void main(void) {
         serial_writeline("\n> ");
         continue;
       }
-      if (strncmp(buff, "fsinfo\r", 8) == 0) {
+      if (strncmp(buff, "fsinfo\r", 7) == 0) {
         shell_fs_print_info();
         serial_writeline("\n> ");
         continue;
       }
-      if (strncmp(buff, "fscreate\r", 10) == 0) {
+      if (strncmp(buff, "fscreate\r", 9) == 0) {
         shell_fs_create();
         serial_writeline("\n> ");
         continue;
       }
-      // if (strncmp(buff, "ledon\r", 7) == 0) {
-      //   shell_led_on();
-      //   serial_writeline("\n> ");
-      //   continue;
-      // }
-      // if (strncmp(buff, "ledoff\r", 8) == 0) {
-      //   shell_led_off();
-      //   serial_writeline("\n> ");
-      //   continue;
-      // }
+      if (strncmp(buff, "ledon\r", 6) == 0) {
+        ledOn();
+        serial_writeline("\n> ");
+        continue;
+      }
+      if (strncmp(buff, "ledoff\r", 7) == 0) {
+        ledOff();
+        serial_writeline("\n> ");
+        continue;
+      }
       if (strncmp(buff, "wozmon\r", 7) == 0) {
         wozmon_run();
       }
@@ -112,30 +107,4 @@ void shell_fs_create() {
   }
   sprintf(data, "inode number: %d\n", inode);
   serial_writeline(data);
-}
-
-// void shell_led_on() {
-//   ledOn();
-// }
-
-// void shell_led_off() {
-//   ledOff();
-// }
-
-
-void sampleString() {
-  char* data = (char*)malloc(sizeof(char) * 128);
-  int x = 1024;
-  if (data == NULL) {
-    return;
-  }
-
-  sprintf(data, "%d %d %x", x, x, x);
-  *((uint8_t*)0xA000) = data[0];
-  *((uint8_t*)0xA000) = data[1];
-  *((uint8_t*)0xA000) = data[2];
-  *((uint8_t*)0xA000) = data[3];
-
-  serial_writeline(data);
-  free(data);
 }

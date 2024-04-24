@@ -26,6 +26,7 @@ build:
 	
 	# assemble all
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/lcd.o lcd.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/io.o io.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/counter.o counter.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/um245.o um245.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/vectors.o vectors.s
@@ -45,6 +46,7 @@ build:
 	  $(BUILD_DIR)/wait.o \
 	  $(BUILD_DIR)/lcd.o \
 	  $(BUILD_DIR)/counter.o \
+	  $(BUILD_DIR)/io.o \
 	  $(BUILD_DIR)/um245.o \
 	  $(BUILD_DIR)/disk.o \
 	  $(BUILD_DIR)/fs.o \
