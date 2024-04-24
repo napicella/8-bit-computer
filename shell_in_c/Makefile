@@ -15,7 +15,7 @@ build:
 	rm -f $(BUILD_DIR)/*
 
 	# compile C code
-	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/main.s main_lcd.c
+	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/main.s main.c
 	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/disk.s fs/src/disk.c
 	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/fs.s fs/src/fs.c
 
