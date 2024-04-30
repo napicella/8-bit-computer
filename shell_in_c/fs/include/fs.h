@@ -14,7 +14,7 @@
 
 #define MAGIC_NUMBER        (0xf0f03410)
 #define INODES_PER_BLOCK    (2) //(128)               /* Number of inodes per block */
-#define POINTERS_PER_INODE  (45)                 /* Number of direct pointers per inode */
+#define POINTERS_PER_INODE  (5)// (45)                 /* Number of direct pointers per inode */
 #define POINTERS_PER_BLOCK  (2)  //(1024)              /* Number of pointers per block */
 #define INODE_NAME_MAX      (64)
 
@@ -62,6 +62,7 @@ void    fs_unmount(FileSystem *fs);
 
 ssize_t fs_create(FileSystem *fs);
 bool    fs_remove(FileSystem *fs, size_t inode_number);
+// fs_stat returns the logical size of the given inode_number, in bytes. Note that zero is a valid logical size for an inode. On failure, it returns -1.
 ssize_t fs_stat(FileSystem *fs, size_t inode_number);
 
 ssize_t fs_read(FileSystem *fs, size_t inode_number, char *data, size_t length, size_t offset);

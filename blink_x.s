@@ -8,15 +8,12 @@
   .segment "CODE"
 
 init:
-  lda #$ff
-  sta $8003
+  lda #$01
+  sta %1110000000000000
 
- loop: 
+loop: 
   lda #$55
-  sta $8001
-
-  lda #$aa
-  sta $8001
+  sta %0000000000000111
 
   jmp loop
 

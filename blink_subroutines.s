@@ -11,7 +11,7 @@
 
 init:
   lda #$ff
-  sta $8002
+  sta $8003
 
 loop:
   jsr leds
@@ -22,12 +22,12 @@ loop:
 leds:
   pha
   lda #$FF
-  sta $8000
+  sta $8001
 
   jsr WAIT
 
   lda #$00
-  sta $8000
+  sta $8001
 
   jsr WAIT
 

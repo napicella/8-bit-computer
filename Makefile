@@ -1,5 +1,11 @@
 export PATH := $(HOME)/github/cc65/bin:$(PATH)
 
+build-blink:
+	cl65 -t none -C load.cfg --cpu 65C02 --no-target-lib blink.s
+
+install-blink:
+	minipro -p AT28C64B -w blink
+
 build-blink-subroutines:
 	cl65 -t none -C load.cfg --cpu 65C02 --no-target-lib blink_subroutines.s
 

@@ -22,7 +22,9 @@ void Ram_Write(uint16_t addr, uint8_t val, Ram *ram);
 // Define the Rom type
 //
 #define ROM_START_ADDR 0xE000
+//#define ROM_START_ADDR 0xC000
 #define ROM_SIZE 0x2000
+//#define ROM_SIZE 0x4000
 
 typedef struct {
   uint8_t data[ROM_SIZE];
