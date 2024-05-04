@@ -13,7 +13,10 @@
         "um245.h": "c",
         "array": "c",
         "string": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "*.tcc": "c",
+        "cstdlib": "c",
+        "memory": "c"
     },
     "C_Cpp.errorSquiggles": "enabled",
     "cmake.configureOnOpen": false,

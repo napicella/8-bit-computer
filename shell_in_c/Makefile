@@ -16,6 +16,7 @@ build:
 
 	# compile C code
 	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/main.s main.c
+	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/serial.s common/src/serial.c
 	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/disk.s fs/src/disk.c
 	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/fs.s fs/src/fs.c
 
@@ -36,6 +37,7 @@ build:
 	ca65 --cpu 65sc02    -o $(BUILD_DIR)/wozmon_tramp.o wozmon_tramp.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/disk.o $(BUILD_DIR)/disk.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/fs.o $(BUILD_DIR)/fs.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/serial.o $(BUILD_DIR)/serial.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/main.o $(BUILD_DIR)/main.s
 	
 	# link them
@@ -52,6 +54,7 @@ build:
 	  $(BUILD_DIR)/fs.o \
 	  $(BUILD_DIR)/wozmon.o \
 	  $(BUILD_DIR)/wozmon_tramp.o \
+	  $(BUILD_DIR)/serial.o \
 	  $(BUILD_DIR)/main.o \
 	  $(BUILD_DIR)/supervision.lib
 

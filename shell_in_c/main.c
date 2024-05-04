@@ -10,12 +10,11 @@
 #include "um245.h"
 
 extern uint16_t __fastcall__ wozmon_run();
+bool fs_inode_print(Inode* inode_ptr);
 
 Disk* disk;
 FileSystem* fs;
 bool fs_mounted;
-
-void serial_fprintline(const char* fmt, ...);
 
 void info();
 void shell_fs_print_info();
@@ -102,8 +101,24 @@ void info() {
 }
 
 void shell_fs_print_info() {
+  fs_info_res* res;
+  char* data;
+  
+  data = (char*)malloc(sizeof(char) * 128);
+  if (data == NULL) {
+    return;
+  }
+  res = (fs_info_res*)malloc(sizeof(fs_info_res));
+  if (res == NULL) {
+    return;
+  }
+  
   shell_fs_mount();
-  fs_info(fs);
+  fs_info(fs, res);
+  sprintf(data, "fs_tot_blocks %d\nfree_blocks: %d\ninode_reserved: %d\n\r",
+           res->total_blocks, res->free_blocks, res->reserved_for_inodes);
+  serial_writeline(data);
+  fs_info_inodes(fs, fs_inode_print);
 }
 
 void shell_fs_mount() {
@@ -146,9 +161,9 @@ void shell_fs_write(char* buff) {
   // successive locations of the array passed as argument. No null character is
   // appended at the end.
   scan_res = sscanf(buff, "fswrite %d %20c", &inode_read, data);
-  serial_fprintline("input inode: %d", inode_read);
+  serial_writeline_f("input inode: %d", inode_read);
   if (scan_res < 1 || scan_res == EOF) {
-    serial_fprintline("invalid fswrite format: %d", scan_res);
+    serial_writeline_f("invalid fswrite format: %d", scan_res);
     return;
   }
 
@@ -172,7 +187,7 @@ void shell_fs_read(char* buff) {
 
   scan_res = sscanf(buff, "fsread %d", &inode_read);
   if (scan_res != 1 || scan_res == EOF) {
-    serial_fprintline("invalid fsread format");
+    serial_writeline_f("invalid fsread format");
     return;
   }
 
@@ -190,7 +205,7 @@ void shell_fs_read(char* buff) {
   data = (char*)malloc(stat_res * sizeof(char));
   read_res = fs_read(fs, inode_read, data, stat_res, 0);
   if (read_res != 0) {
-    serial_fprintline("failed to read %d\n", read_res);
+    serial_writeline_f("failed to read %d\n", read_res);
   }
   serial_writeline(data);
   free(data);
@@ -203,7 +218,7 @@ void shell_fs_stat(char* buff) {
 
   scan_res = sscanf(buff, "fsstat %d", &inode_read);
   if (scan_res != 1 || scan_res == EOF) {
-    serial_fprintline("invalid fsstat format");
+    serial_writeline_f("invalid fsstat format");
     return;
   }
   shell_fs_mount();
@@ -213,5 +228,23 @@ void shell_fs_stat(char* buff) {
     serial_writeline("error reading file");
     return;
   }
-  serial_fprintline("size: %d", stat_res);
+  serial_writeline_f("size: %d", stat_res);
+}
+
+bool fs_inode_print(Inode* inode_ptr) {
+  int index = 0;
+  int i = 0;
+
+  char* data = (char*)malloc(256 * sizeof(char));
+  index = sprintf(data,
+                  "inode\n  name: %s\n  size: %lu\n  blocks:", inode_ptr->name,
+                  inode_ptr->size);
+
+  for (i = 0; i < POINTERS_PER_INODE; i++) {
+    index += sprintf(&data[index], "%lu ", inode_ptr->direct[i]);
+  }
+  sprintf(&data[index], "\n");
+  serial_writeline(data);
+
+  free(data);
 }

@@ -4,7 +4,11 @@
 #define FS_H
 
 #include "disk.h"
+#ifndef DISK_LOCAL
 #include "types.h"
+#else
+#include <stddef.h>
+#endif
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -17,6 +21,10 @@
 #define POINTERS_PER_INODE  (5)// (45)                 /* Number of direct pointers per inode */
 #define POINTERS_PER_BLOCK  (2)  //(1024)              /* Number of pointers per block */
 #define INODE_NAME_MAX      (64)
+#define BLOCK_NUM           (64)
+#define INODE_BLOCKS        (5)
+#define INODE_TYPE_FILE     (0)
+#define INODE_TYPE_DIR      (1)
 
 /* File System Structures */
 
@@ -34,7 +42,8 @@ struct Inode {
     uint32_t    valid;                          /* Whether or not inode is valid */
     uint32_t    size;                           /* Size of file */
     uint32_t    direct[POINTERS_PER_INODE];     /* Direct pointers */
-    // uint32_t    indirect;                       /* Indirect pointers */
+    // uint32_t    indirect;                    /* Indirect pointers */
+    uint32_t    type;                           /* Type of the inode (file 0, dir 1)*/
 };
 
 typedef union  Block      Block;
@@ -52,6 +61,12 @@ struct FileSystem {
     SuperBlock   meta_data;                     /* File system meta data */
 };
 
+typedef struct fs_info_res {
+  int free_blocks;
+  int total_blocks;
+  int reserved_for_inodes;
+} fs_info_res;
+
 /* File System Functions */
 
 void    fs_debug(Disk *disk);
@@ -68,5 +83,6 @@ ssize_t fs_stat(FileSystem *fs, size_t inode_number);
 ssize_t fs_read(FileSystem *fs, size_t inode_number, char *data, size_t length, size_t offset);
 ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length, size_t offset);
 
-bool    fs_info(FileSystem *fs);
+void fs_info(FileSystem *fs, fs_info_res* res);
+bool fs_info_inodes(FileSystem *fs, void (*visitor)(Inode*));
 #endif

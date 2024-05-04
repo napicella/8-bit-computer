@@ -1,13 +1,10 @@
 #include "fs.h"
+#include "um245.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "um245.h"
-
-#define BLOCK_NUM (64)
-#define INODE_BLOCKS (5)  // (50)
+ 
 #define DATA_BOCK_NUM (BLOCK_NUM - 1 - INODE_BLOCKS)
 #define FIRST_INODE_BLOCK (1)
 #define LAST_INODE_BLOCK (INODE_BLOCKS)
@@ -18,22 +15,13 @@ typedef struct find_result {
   Block *block;
   uint32_t block_num;
   int inode_offset;
+
 } find_result;
 
 int fs_find_empty_block(FileSystem *fs);
 find_result *fs_find_inode(FileSystem *fs, size_t inode_number);
-bool fs_info_inodes(FileSystem *fs);
-bool fs_inode_print(Inode *inode_ptr);
 
-void serial_fprintline(const char *fmt, ...) {
-  char *data = (char *)malloc(128 * sizeof(char));
-  va_list arg;
-  va_start(arg, fmt);
-  vsprintf(data, fmt, arg);
-  serial_writeline(data);
-  va_end(arg);
-  free(data);
-}
+
 
 bool fs_format(Disk *disk) {
   Inode *inode_ptr;
@@ -240,36 +228,25 @@ int fs_find_empty_block(FileSystem *fs) {
   return -1;
 }
 
-bool fs_info(FileSystem *fs) {
-  int freeBlocksCount = 0;
+void fs_info(FileSystem *fs, fs_info_res* res) {
+  int free_blocks_count = 0;
   int blocks;
-  int inodesReserved = 0;
+  int inodes_reserved = 0;
   int i = 0;
-  char *data = (char *)malloc(sizeof(char) * 128);
-  if (data == NULL) {
-    return false;
-  }
 
   blocks = fs->meta_data.blocks;
-  inodesReserved = fs->meta_data.inode_blocks;
+  inodes_reserved = fs->meta_data.inode_blocks;
   for (i = 0; i < blocks; i++) {
     if (fs->free_blocks[i]) {
-      freeBlocksCount++;
+      free_blocks_count++;
     }
   }
-
-  sprintf(data, "fs_tot_blocks %d\nfree_blocks: %d\ninode_reserved: %d\n\r",
-          blocks, freeBlocksCount, inodesReserved);
-
-  serial_writeline(data);
-  fs_info_inodes(fs);
-
-  free(data);
-
-  return true;
+  res->total_blocks = blocks;
+  res->free_blocks = free_blocks_count;
+  res->reserved_for_inodes = inodes_reserved;
 }
 
-bool fs_info_inodes(FileSystem *fs) {
+bool fs_info_inodes(FileSystem *fs, void (*visitor)(Inode*)) {
   size_t i, j = 0;
   Block *block;
   Inode *inode_ptr;
@@ -285,29 +262,11 @@ bool fs_info_inodes(FileSystem *fs) {
     for (j = 0; j < INODES_PER_BLOCK; j++) {
       inode_ptr = &(block->inodes[j]);
       if (inode_ptr->valid) {
-        fs_inode_print(inode_ptr);
+        (*visitor)(inode_ptr);
       }
     }
   }
   free(block);
-}
-
-bool fs_inode_print(Inode *inode_ptr) {
-  int index = 0;
-  int i = 0;
-
-  char *data = (char *)malloc(256 * sizeof(char));
-  index = sprintf(data,
-                  "inode\n  name: %s\n  size: %lu\n  blocks:", inode_ptr->name,
-                  inode_ptr->size);
-
-  for (i = 0; i < POINTERS_PER_INODE; i++) {
-    index += sprintf(&data[index], "%lu ", inode_ptr->direct[i]);
-  }
-  sprintf(&data[index], "\n");
-  serial_writeline(data);
-
-  free(data);
 }
 
 find_result *new_find_result() {
@@ -358,7 +317,7 @@ bool fs_find_inode_2(FileSystem *fs, size_t inode_number, Block *block) {
   bool success;
   size_t block_num = FIRST_INODE_BLOCK + (inode_number / INODES_PER_BLOCK);
 
-  serial_fprintline("find_node block num %d\n", block_num);
+  serial_writeline_f("find_node block num %d\n", block_num);
   return fs_read_block(fs->disk, block, block_num);
 }
 
@@ -439,9 +398,8 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
   find_2_res = fs_find_inode_2(fs, inode_number, inode_block);
   inode_ptr = &(inode_block->inodes[offset_inode]);
 
-  serial_fprintline("block num %d\n", block_num);
-  serial_fprintline("offset for the inode%d\n", offset_inode);
-  fs_inode_print(inode_ptr);
+  serial_writeline_f("block num %d\n", block_num);
+  serial_writeline_f("offset for the inode%d\n", offset_inode);
 
   blocks_available = direct_pointers_len(inode_ptr);
   if (blocks_available == 0) {
@@ -449,7 +407,7 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
     // one block
     return -2;
   }
-  serial_fprintline("direct pointers length %d\n", blocks_available);
+  serial_writeline_f("direct pointers length %d\n", blocks_available);
 
   offset_allocations_in_blocks = (offset / BLOCK_SIZE) + 1 - blocks_available;
   remaining_from_offset = BLOCK_SIZE * ((offset / BLOCK_SIZE) + 1) - offset;
@@ -468,11 +426,11 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
     return -3;
   }
 
-  serial_fprintline("offset allocations in block %d\n",
+  serial_writeline_f("offset allocations in block %d\n",
                     offset_allocations_in_blocks);
-  serial_fprintline("length allocations in block %d\n",
+  serial_writeline_f("length allocations in block %d\n",
                     length_allocations_in_blocks);
-  serial_fprintline("total allocations in block %d\n",
+  serial_writeline_f("total allocations in block %d\n",
                     total_allocations_in_block);
   // allocate blocks for the inode and write the result on disk
   for (i = 0; i < total_allocations_in_block; i++) {
@@ -492,10 +450,10 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
   while (data_written < length) {
     current_block = inode_ptr->direct[i];
     offset_relative_to_block_start = (offset + data_written) % BLOCK_SIZE;
-    serial_fprintline("writing to block %lu\n", current_block);
-    serial_fprintline("offset_relative_to_block_start %d\n",
+    serial_writeline_f("writing to block %lu\n", current_block);
+    serial_writeline_f("offset_relative_to_block_start %d\n",
                       offset_relative_to_block_start);
-    serial_fprintline("remaining %d\n", remaining);
+    serial_writeline_f("remaining %d\n", remaining);
     fs_write_data_block(fs, current_block, data + data_written, remaining,
                         offset_relative_to_block_start);
     data_written += remaining;
