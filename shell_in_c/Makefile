@@ -17,8 +17,9 @@ build:
 	# compile C code
 	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/main.s main.c
 	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/serial.s common/src/serial.c
-	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/disk.s fs/src/disk.c
-	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/fs.s fs/src/fs.c
+	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/disk.s fs/src/mcu/disk.c
+	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/fs.s fs/src/common/fs.c
+	cc65 -t none --cpu 65sc02 -g $(INCLUDE_ARGS) -o $(BUILD_DIR)/hash.s fs/src/common/hash.c
 
 	# add the crt0.s to the supervision.lib
 	ca65 --cpu 65sc02 -o $(BUILD_DIR)/crt0.o crt0.s
@@ -37,6 +38,7 @@ build:
 	ca65 --cpu 65sc02    -o $(BUILD_DIR)/wozmon_tramp.o wozmon_tramp.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/disk.o $(BUILD_DIR)/disk.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/fs.o $(BUILD_DIR)/fs.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/hash.o $(BUILD_DIR)/hash.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/serial.o $(BUILD_DIR)/serial.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/main.o $(BUILD_DIR)/main.s
 	
@@ -51,6 +53,7 @@ build:
 	  $(BUILD_DIR)/io.o \
 	  $(BUILD_DIR)/um245.o \
 	  $(BUILD_DIR)/disk.o \
+	  $(BUILD_DIR)/hash.o \
 	  $(BUILD_DIR)/fs.o \
 	  $(BUILD_DIR)/wozmon.o \
 	  $(BUILD_DIR)/wozmon_tramp.o \

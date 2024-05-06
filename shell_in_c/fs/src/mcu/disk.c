@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "um245.h"
 
@@ -54,7 +55,7 @@ ssize_t disk_read(Disk* disk, size_t block, char* data) {
   Packet* packet;
 
   packet = (Packet*)malloc(sizeof(Packet));
-  packet->magic = "cmdmode";
+  packet->magic = "@cmdmode";
   packet->contentLength = sizeof(char) + sizeof(uint8_t);
   body[0] = (uint8_t)'R';
   body[1] = block;
@@ -85,7 +86,7 @@ ssize_t disk_write(Disk* disk, size_t block, char* data) {
   if (packet == NULL) {
     return DISK_FAILURE;
   }
-  packet->magic = "cmdmode";
+  packet->magic = "@cmdmode";
   packet->contentLength = sizeof(char) + sizeof(uint8_t) + BLOCK_SIZE;
   body[0] = (uint8_t)'W';
   body[1] = block;
@@ -96,4 +97,14 @@ ssize_t disk_write(Disk* disk, size_t block, char* data) {
   free(packet);
 
   return 0;
+}
+
+void fs_debug_print(const char *fmt, ...) {
+  char *data = (char *)malloc(128 * sizeof(char));
+  va_list arg;
+  va_start(arg, fmt);
+  vsprintf(data, fmt, arg);
+  serial_writeline(data);
+  va_end(arg);
+  free(data);
 }

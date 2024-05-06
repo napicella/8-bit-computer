@@ -4,11 +4,8 @@
 #define FS_H
 
 #include "disk.h"
-#ifndef DISK_LOCAL
 #include "types.h"
-#else
-#include <stddef.h>
-#endif
+#include "hash.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -59,17 +56,21 @@ struct FileSystem {
     Disk        *disk;                          /* Disk file system is mounted on */
     bool        *free_blocks;                   /* Free block bitmap */
     SuperBlock   meta_data;                     /* File system meta data */
+
+    struct tablec_ht *inodes_name_map;
 };
 
 typedef struct fs_info_res {
-  int free_blocks;
-  int total_blocks;
-  int reserved_for_inodes;
+  uint32_t free_blocks;
+  uint32_t total_blocks;
+  uint32_t reserved_for_inodes;
 } fs_info_res;
 
 /* File System Functions */
 
 void    fs_debug(Disk *disk);
+// fs_debug_print the function used by the filesystem functions to output debug statements
+void    fs_debug_print(const char *fmt, ...);
 bool    fs_format(Disk *disk);
 
 bool    fs_mount(FileSystem *fs, Disk *disk);
@@ -84,5 +85,7 @@ ssize_t fs_read(FileSystem *fs, size_t inode_number, char *data, size_t length, 
 ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length, size_t offset);
 
 void fs_info(FileSystem *fs, fs_info_res* res);
-bool fs_info_inodes(FileSystem *fs, void (*visitor)(Inode*));
+bool fs_inodes_walk(FileSystem *fs, void (*visitor)(Inode*));
+
+ssize_t fs_find(FileSystem *fs);
 #endif

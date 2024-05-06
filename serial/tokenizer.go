@@ -9,18 +9,20 @@ import (
 	"path/filepath"
 )
 
+const tokenLength = 8
+
 type token struct {
 	data []byte
 }
 
 func newTokenizer() *tokenizer {
 	return &tokenizer{
-		tokenStart: [7]uint8{'c', 'm', 'd', 'm', 'o', 'd', 'e'},
+		tokenStart: [tokenLength]uint8{'@', 'c', 'm', 'd', 'm', 'o', 'd', 'e'},
 	}
 }
 
 type tokenizer struct {
-	tokenStart  [7]uint8
+	tokenStart  [tokenLength]uint8
 	currToMatch int
 
 	tokenData         bytes.Buffer
@@ -168,6 +170,7 @@ func (t *disk) read(sector uint8) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("block read: %s\n", block)
 	return block, nil
 }
 

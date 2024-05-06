@@ -3,8 +3,11 @@
         {
             "name": "Linux",
             "includePath": [
+                // for 6502 dev
                 "${workspaceFolder}/**", 
-                "~/github/cc65/include/"
+                "~/github/cc65/include/",
+                // for standard gcc dev
+                "/usr/include/**"
             ],
             "defines": [],
             "compilerPath": "~/github/cc65/bin/cc65",

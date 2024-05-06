@@ -1,6 +1,6 @@
-#ifdef DISK_LOCAL
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include "disk.h"
 
@@ -34,4 +34,9 @@ ssize_t	disk_write(Disk *disk, size_t block, char *data) {
   return 0;
 }
 
-#endif
+void fs_debug_print(const char *fmt, ...) {
+  va_list arg;
+  va_start(arg, fmt);
+  vprintf(fmt, arg);
+  va_end(arg);
+}

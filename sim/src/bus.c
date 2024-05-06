@@ -29,7 +29,7 @@ uint8_t Bus_Read(uint16_t addr, Bus* bus) {
   if (between(addr, Um245_Start(), Um245_Length())) {
     return Um245_Read(addr, bus->um245);
   }
-  perror("no device associated to address");
+  fprintf(stderr, "no device associated to address %04x\n", addr);
   exit(EXIT_FAILURE);
 }
 

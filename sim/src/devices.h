@@ -21,10 +21,10 @@ void Ram_Write(uint16_t addr, uint8_t val, Ram *ram);
 
 // Define the Rom type
 //
-#define ROM_START_ADDR 0xE000
-//#define ROM_START_ADDR 0xC000
-#define ROM_SIZE 0x2000
-//#define ROM_SIZE 0x4000
+//#define ROM_START_ADDR 0xE000
+#define ROM_START_ADDR 0x8C00
+//#define ROM_SIZE 0x2000
+#define ROM_SIZE 0x8000
 
 typedef struct {
   uint8_t data[ROM_SIZE];
@@ -49,9 +49,11 @@ void Spy_Write(uint16_t addr, uint8_t val, Spy *spy);
 
 // Define the Um245 type
 //
-#define UART_WRITE  0b1001000000000001
-#define UART_READ   0b1001000000000010
-#define UART_STATUS 0b1001000000000100
+#define UM_START_ADDR 0x8400
+#define UM_SIZE 0x0800
+#define UART_WRITE  0b1000010000000001
+#define UART_READ   0b1000010000000010
+#define UART_STATUS 0b1000010000000100
 
 #define UART_WRITE_BUSY_MASK   0b00000001
 #define UART_READ_NO_DATA_MASK 0b00000010
