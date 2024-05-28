@@ -1,8 +1,9 @@
-  .setcpu "65sc02"
+  .setcpu "65C02"
   .segment "VECTORS"
-    .word   $0F00          ; NMI vector
+    .word   $eaea          ; NMI vector
     .word   RESET          ; RESET vector
-    .word   $0000          ; IRQ vector
+    .word   $eaea          ; IRQ vector
+
 
   .segment "CODE"
 

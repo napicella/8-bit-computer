@@ -1,50 +1,64 @@
 export PATH := $(HOME)/github/cc65/bin:$(PATH)
+BUILD_DIR=./bin
 
-build-blink:
-	cl65 -t none -C load.cfg --cpu 65C02 --no-target-lib blink.s
+blink-build:
+	cl65 -t none -C load.cfg --cpu 65C02 -o $(BUILD_DIR)/blink --no-target-lib blink.s
 
-install-blink:
-	minipro -p AT28C64B -w blink
+blink-install:
+	minipro -p AT28C64B -w $(BUILD_DIR)/blink
 
-build-blink-subroutines:
-	cl65 -t none -C load.cfg --cpu 65C02 --no-target-lib blink_subroutines.s
+blink-subroutines-build:
+	cl65 -t none -C load.cfg --cpu 65C02 -o $(BUILD_DIR)/blink_sub --no-target-lib blink_subroutines.s
 
-install-blink-subroutines:
-	minipro -p AT28C64B -w blink_subroutines
+blink-subroutines-install:
+	minipro -p AT28C64B -w $(BUILD_DIR)/blink_sub
 
-build-blink-timer:
-	cl65 -t none -C load.cfg --cpu 65C02 --no-target-lib blink_timer.s	
+blink-subroutines-256-install:
+	minipro -p AT28C256 -uP -w $(BUILD_DIR)/blink_sub
 
-install-blink-timer:
-	minipro -p AT28C64B -w blink_timer
+blink-timer-build:
+	cl65 -t none -C load.cfg --cpu 65C02 -o $(BUILD_DIR)/blink_timer --no-target-lib blink_timer.s	
 
-build-ram-full:
-	cl65 -t none -C load.cfg --cpu 65SC02 --no-target-lib ram_test_full.s
+blink-timer-install:
+	minipro -p AT28C64B -w $(BUILD_DIR)/blink_timer
 
-install-ram-full:
-	minipro -p AT28C64B -w ram_test_full
+ram-full-build:
+	cl65 -t none -C load.cfg --cpu 65SC02 -o $(BUILD_DIR)/ram_test_full --no-target-lib ram_test_full.s
 
-build-lcd-8:
-	cl65 -t none -C load.cfg --cpu 65SC02 --no-target-lib lcd_8_pin.s
+ram-full-install:
+	minipro -p AT28C64B -w $(BUILD_DIR)/ram_test_full
 
-install-lcd-8:
-	minipro -p AT28C64B -w lcd_8_pin
+lcd-8-build:
+	cl65 -t none -C load.cfg --cpu 65SC02 $(BUILD_DIR)/lcd_8_pin --no-target-lib lcd_8_pin.s
 
-build-lcd-4:
-	cl65 -t none -C load.cfg --cpu 65SC02 --no-target-lib lcd_4_pin.s
+lcd-8-install:
+	minipro -p AT28C64B -w $(BUILD_DIR)/lcd_8_pin
 
-install-lcd-4:
-	minipro -p AT28C64B -w lcd_4_pin
+lcd-4-build:
+	cl65 -t none -C load.cfg --cpu 65SC02 -o $(BUILD_DIR)/lcd_4_pin --no-target-lib lcd_4_pin.s
 
-build-lcd-4-uart:
-	cl65 -t none -C load.cfg --cpu 65SC02 --no-target-lib lcd_4_pin_uart.s
+lcd-4-install:
+	minipro -p AT28C64B -w $(BUILD_DIR)/lcd_4_pin
 
-install-lcd-4-uart:
-	minipro -p AT28C64B -w lcd_4_pin_uart
+lcd-4-uart-build:
+	cl65 -t none -C load.cfg --cpu 65SC02 -o $(BUILD_DIR)/lcd_4_pin_uart --no-target-lib lcd_4_pin_uart.s
 
-build-wozmon:
-	cl65 -t none -C wozmon.cfg --cpu 65SC02 --no-target-lib wozmon.s
+lcd-4-uart-install:
+	minipro -p AT28C64B -w $(BUILD_DIR)/lcd_4_pin_uart
 
-install-wozmon:
-	minipro -p AT28C64B --no_size_error -w wozmon
+lcd-4-uart-256-install:
+	minipro -p AT28C256 -uP -w $(BUILD_DIR)/lcd_4_pin_uart
+
+wozmon-build:
+	cl65 -t none -C wozmon.cfg --cpu 65SC02 -o $(BUILD_DIR)/wozmon --no-target-lib wozmon.s
+
+wozmon-install:
+	minipro -p AT28C64B -uP -w wozmon
+
+wozmon-256-build:
+	cl65 -t none -C wozmon-256.cfg --cpu 65SC02 -o $(BUILD_DIR)/wozmon_256 --no-target-lib wozmon.s
+	
+wozmon-256-install:
+	minipro -p AT28C256 -uP -w $(BUILD_DIR)/wozmon_256
+
 
