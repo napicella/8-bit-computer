@@ -11,6 +11,12 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "fs.h"
+
+Disk *disk;
+FileSystem *fs;
+bool fs_mounted = false;
+
 static int do_getattr(const char *path, struct stat *st) {
   printf("[getattr] Called\n");
   printf("\tAttributes of %s requested\n", path);
@@ -21,16 +27,17 @@ static int do_getattr(const char *path, struct stat *st) {
   //		st_gid: 	The group ID of the file.
   //		st_atime: 	This is the last access time for the file.
   //		st_mtime: 	This is the time of the last modification to the
-  //contents of the file. 		st_mode: 	Specifies the mode of the file. This
-  //includes file type information (see Testing File Type) and the file
-  //permission bits (see Permission Bits). 		st_nlink: 	The number of hard links
-  //to the file. This count keeps track of how many directories have entries for
-  //this file. If the count is ever decremented to zero, then the file itself is
-  //discarded as soon 						as no process still holds it open. Symbolic links are not
-  //counted in the total. 		st_size:	This specifies the size of a regular
-  //file in bytes. For files that are really devices this field isn’t usually
-  //meaningful. For symbolic links this specifies the length of the file name
-  //the link refers to.
+  // contents of the file. 		st_mode: 	Specifies the mode of
+  // the file. This includes file type information (see Testing File Type) and
+  // the file permission bits (see Permission Bits). 		st_nlink:
+  // The number of hard links to the file. This count keeps track of how many
+  // directories have entries for this file. If the count is ever decremented to
+  // zero, then the file itself is discarded as soon
+  // as no process still holds it open. Symbolic links are not counted in the
+  // total. 		st_size:	This specifies the size of a regular
+  // file in bytes. For files that are really devices this field isn’t usually
+  // meaningful. For symbolic links this specifies the length of the file name
+  // the link refers to.
 
   st->st_uid = getuid();  // The owner of the file/directory is the user who
                           // mounted the filesystem
@@ -65,8 +72,7 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler,
       0)  // If the user is trying to show the files/directories of the root
           // directory show the following
   {
-    filler(buffer, "file54", NULL, 0);
-    filler(buffer, "file349", NULL, 0);
+    filler(buffer, "file", NULL, 0);
   }
 
   return 0;
@@ -74,26 +80,36 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler,
 
 static int do_read(const char *path, char *buffer, size_t size, off_t offset,
                    struct fuse_file_info *fi) {
-  printf("--> Trying to read %s, %u, %u\n", path, offset, size);
+  printf("--> Trying to read %s, %ld, %ld\n", path, offset, size);
 
-  char file54Text[] = "Hello World From File54!";
-  char file349Text[] = "Hello World From File349!";
-  char *selectedText = NULL;
+  // char file54Text[] = "Hello World From File54!";
+  // char file349Text[] = "Hello World From File349!";
+  // char *selectedText = NULL;
 
-  // ... //
+  // if (strcmp(path, "/file54") == 0)
+  //   selectedText = file54Text;
+  // else if (strcmp(path, "/file349") == 0)
+  //   selectedText = file349Text;
+  // else
+  //   return -1;
+  // memcpy(buffer, selectedText + offset, size);
 
-  if (strcmp(path, "/file54") == 0)
-    selectedText = file54Text;
-  else if (strcmp(path, "/file349") == 0)
-    selectedText = file349Text;
-  else
-    return -1;
+  if (!fs_mounted) {
+    disk = (Disk *)malloc(sizeof(Disk));
+    if (disk == NULL) {
+      return -1;
+    }
+    fs = (FileSystem *)malloc(sizeof(Disk));
+    if (fs == NULL) {
+      return -1;
+    }
+    fs_mount(fs, disk);
+    fs_mounted = true;
+  } 
 
-  // ... //
+  fs_read(fs, 0, buffer, 512, 0);
 
-  memcpy(buffer, selectedText + offset, size);
-
-  return strlen(selectedText) - offset;
+  return 512;
 }
 
 static struct fuse_operations operations = {

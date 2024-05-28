@@ -81,6 +81,7 @@ bool *fs_get_blocks_bitmap(FileSystem *fs) {
     // of inodes.
 
     readSuccess = fs_read_block(fs->disk, block, currBlock);
+    // fs_debug_print("[fs] block read\n");
     if (!readSuccess) {
       return false;
     }
@@ -157,8 +158,8 @@ bool fs_find_inode_2(FileSystem *fs, size_t inode_number, Block *block) {
   bool success;
   size_t block_num = FIRST_INODE_BLOCK + (inode_number / INODES_PER_BLOCK);
 
-  fs_debug_print("find_node inode num %d\n", inode_number);
-  fs_debug_print("find_node block num %d\n", block_num);
+  // fs_debug_print("find_node inode num %d\n", inode_number);
+  // fs_debug_print("find_node block num %d\n", block_num);
   return fs_read_block(fs->disk, block, block_num);
 }
 
@@ -250,7 +251,6 @@ bool fs_format(Disk *disk) {
     }
     disk_write(disk, i, block->data);
   }
-
   free(block);
 
   return true;
@@ -263,10 +263,10 @@ bool fs_mount(FileSystem *fs, Disk *disk) {
   if (block == NULL) {
     return false;
   }
-  fs->inodes_name_map = (struct tablec_ht *)malloc(sizeof(struct tablec_ht));
-  if (fs->inodes_name_map == NULL) {
-    return false;
-  }
+  // fs->inodes_name_map = (struct tablec_ht *)malloc(sizeof(struct tablec_ht));
+  // if (fs->inodes_name_map == NULL) {
+  //   return false;
+  // }
   fs_read_block(disk, block, 0);
 
   fs->disk = disk;
@@ -275,7 +275,7 @@ bool fs_mount(FileSystem *fs, Disk *disk) {
   if (fs->free_blocks == NULL) {
     return false;
   }
-  tablec_init(fs->inodes_name_map, 128);
+  // tablec_init(fs->inodes_name_map, 128);
 
   return true;
 }
@@ -330,7 +330,7 @@ ssize_t fs_create(FileSystem *fs) {
       free(block);
 
       inode_number = INODES_PER_BLOCK * (i - FIRST_INODE_BLOCK) + j;
-      tablec_set(fs->inodes_name_map, "root", (void *)inode_number);
+      // tablec_set(fs->inodes_name_map, "root", (void *)inode_number);
 
       return inode_number;
     }
@@ -342,12 +342,13 @@ ssize_t fs_create(FileSystem *fs) {
 
 ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
                  size_t offset) {
-  // find_result *result;
   Block *inode_block;
   Block *data_block;
   Inode *inode_ptr;
   size_t i = 0;
   bool found = false;
+  bool inode_needs_update = false;
+  bool find_2_res;
   size_t offset_allocations_in_blocks;
   size_t length_allocations_in_blocks;
   size_t total_allocations_in_block;
@@ -358,27 +359,23 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
   size_t data_written = 0;
   size_t remaining = 0;
   uint32_t current_block;
-  bool find_2_res;
-  size_t block_num = FIRST_INODE_BLOCK + (inode_number / INODES_PER_BLOCK);
-  size_t offset_inode = inode_number % INODES_PER_BLOCK;
-  bool inode_needs_update = false;
 
-  // result = fs_find_inode(fs, inode_number);
-  // if (result == NULL) {
-  //   return -1;
-  // }
+  // block_num is the block that contains the inode info
+  size_t block_num = FIRST_INODE_BLOCK + (inode_number / INODES_PER_BLOCK);
+  // offset_inode - each inode block contains INODES_PER_BLOCK
+  size_t offset_inode = inode_number % INODES_PER_BLOCK;
+
+  fs_debug_print("fs_write inode num %d - length %d\n", inode_number, length);
+  fs_debug_print("inode block num %d\n", block_num);
+  fs_debug_print("offset in inode block %d\n", offset_inode);
+
   inode_block = (Block *)malloc(sizeof(Block));
   if (inode_block == NULL) {
     return -1;
   }
 
-  fs_debug_print("fs_write inode num %d %u %x\n", inode_number, inode_number,
-                 inode_number);
   find_2_res = fs_find_inode_2(fs, inode_number, inode_block);
   inode_ptr = &(inode_block->inodes[offset_inode]);
-
-  fs_debug_print("block num %d\n", block_num);
-  fs_debug_print("offset for the inode%d\n", offset_inode);
 
   blocks_available = direct_pointers_len(inode_ptr);
   if (blocks_available == 0) {
@@ -388,8 +385,13 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
   }
   fs_debug_print("direct pointers length %d\n", blocks_available);
 
+  // offset_allocations_in_blocks - how many blocks need to be allocated because
+  // of the position of the offset
   offset_allocations_in_blocks = (offset / BLOCK_SIZE) + 1 - blocks_available;
-  remaining_from_offset = BLOCK_SIZE * ((offset / BLOCK_SIZE) + 1) - offset;
+  // remaining_from_offset - bytes remaining from the offset to the end of the
+  // block, equivalent to: remaining_from_offset = BLOCK_SIZE * ((offset /
+  // BLOCK_SIZE) + 1) - offset;
+  remaining_from_offset = BLOCK_SIZE - (offset % BLOCK_SIZE);
   if (length <= remaining_from_offset) {
     length_allocations_in_blocks = 0;
   } else {
@@ -405,6 +407,8 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
     return -3;
   }
 
+  // Allocate blocks
+  //
   fs_debug_print("offset allocations in block %d\n",
                  offset_allocations_in_blocks);
   fs_debug_print("length allocations in block %d\n",
@@ -439,15 +443,16 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
     i++;
   }
 
-  // here we probably want a truncate option
-  // truncate
-  inode_ptr->size = offset + length;
-  inode_needs_update = true;
+  // here we probably want a truncate option, eg:
   // do not truncate, update size only if increased
   // if (inode_ptr->size < offset + length) {
   //   inode_ptr->size = offset + length;
   //   inode_needs_update = true;
   // }
+  //
+  // For now, we always truncate
+  inode_ptr->size = offset + length;
+  inode_needs_update = true;
   if (total_allocations_in_block > 0) {
     inode_needs_update = true;
   }
@@ -543,7 +548,7 @@ void fs_info(FileSystem *fs, fs_info_res *res) {
 
   blocks = fs->meta_data.blocks;
   inodes_reserved = fs->meta_data.inode_blocks;
-  for (i = 0; i < blocks; i++) {
+  for (i = 0; i < 42; i++) {
     if (fs->free_blocks[i]) {
       free_blocks_count++;
     }
@@ -576,8 +581,8 @@ bool fs_inodes_walk(FileSystem *fs, void (*visitor)(Inode *)) {
   free(block);
 }
 
-int fs_find(FileSystem *fs) {
-  struct tablec_bucket *bucket = tablec_get(fs->inodes_name_map, "root");
+int fs_find(FileSystem *fs, char *name) {
+  struct tablec_bucket *bucket = tablec_get(fs->inodes_name_map, name);
   if (bucket == NULL) {
     return -1;
   }

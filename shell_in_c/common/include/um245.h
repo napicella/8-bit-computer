@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+extern void __fastcall__ serial_init(void);
+
 extern void __fastcall__  serial_writebyte(char);
 /*
  * serial_writeline writes until the string terminator (\0, that is a 0, the NULL byte)

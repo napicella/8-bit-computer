@@ -10,7 +10,7 @@
  * serial_writeline_f("find_node block num %d\n", block_num); 
  */
 void serial_writeline_f(const char *fmt, ...) {
-  char *data = (char *)malloc(128 * sizeof(char));
+  char *data = (char *)malloc(1024 * sizeof(char));
   va_list arg;
   va_start(arg, fmt);
   vsprintf(data, fmt, arg);

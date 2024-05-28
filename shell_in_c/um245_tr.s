@@ -10,48 +10,22 @@
 ;
 ;
 ; ----------------------------------------------------------------------------------------------------
-; Driver for UM245R USB Parallel FIFO that is connected to the 65C22 VIA interface.
+; Driver for UM245R USB Parallel FIFO that is connected to the CPU data bus via BUS transceiver.
 ;
 ;
-; Driver expects the UM245R USB to be connected to the VIA as follows:
-; VIA_PORT_B -> UM245R_DATA
-; VIA_PORT_A [A0] -> UM245R_WE#
-; VIA_PORT_A [A1] -> UM245R_RD#
-; VIA_PORT_A [A2] -> UM245R_TXE
-; VIA_PORT_A [A3] -> UM245R_RXE
+; TODO: connection details
 
-.export _serial_init
+
 .export _serial_writebyte
 .export _serial_writeline
 .export _serial_readline
 .export _serial_readbyte
 
-
-PORTB = $8000
-PORTA = $8001
-DDRB  = $8002
-DDRA  = $8003
-
-UART_WRITE_BUSY_MASK   = %00000100
-UART_READ_NO_DATA_MASK = %00001000
-
-
-; ---------------------------------------------------------------
-; void __near__ __fastcall__ serial_init (void)
-; ---------------------------------------------------------------
-.segment    "CODE"
-.proc _serial_init: near
-  lda #$FF                        ; set PORTB as output
-  sta DDRB
-  lda #$00
-  sta PORTB
-
-  lda #%00000011   ; set PORTA first and second bit to output (connected W# and R# on UM245R)
-  sta DDRA
-  lda #%00000011   ; W# is stable high, R# is stable high
-  sta PORTA
-  rts
-.endproc
+UART_WRITE  = %1000010000000001
+UART_READ   = %1000010000000010
+UART_STATUS = %1000010000000100
+UART_WRITE_BUSY_MASK   = %00000001
+UART_READ_NO_DATA_MASK = %00000010
 
 
 ; ---------------------------------------------------------------
@@ -66,34 +40,20 @@ _data:    .res 2, $00
 .proc _serial_writeline: near
   sta _data       ;  Set zero page pointer to string address
   stx _data+1     ;    (pointer passed in via the A/X registers)
-  ldy #$00
+  ldy #00
   jsr uart_write_line
   rts
 .endproc
 
 uart_write_line:
-  lda #$FF                        ; set PORTB as output
-  sta DDRB
 uart_write_line_loop:
   lda #UART_WRITE_BUSY_MASK
-  and PORTA
-  bne uart_write_line_loop        ; can't write, um245 busy
-
-  lda (_data),y                   ; zero page address, see Post-Indexed Indirect, "(Zero-Page),Y"
-                                  ; https://www.masswerk.at/6502/6502_instruction_set.html
-  beq uart_write_line_loop_exit   ; if NULL byte exit
-                                  ; otherwise
-  sta PORTB                       ; store the byte to PORTB 
-  
-
-  lda #%11111110                   ; strobe W#
-  and PORTA
-  sta PORTA
-
-  lda #%00000001
-  ora PORTA
-  sta PORTA
-
+  and UART_STATUS
+  bne uart_write_line_loop   ; can't transfer yet cause TXE is high
+  lda (_data),y          ; zero page address, see Post-Indexed Indirect, "(Zero-Page),Y"
+                             ; https://www.masswerk.at/6502/6502_instruction_set.html
+  beq uart_write_line_loop_exit
+  sta UART_WRITE
   iny
   bne uart_write_line_loop   ; If Y hasn't wrapped around, continue loop
   inc _data+1                ; If Y wrapped around, increment the high byte of the address
@@ -113,25 +73,13 @@ uart_write_line_loop_exit:
 .endproc
 
 uart_write_byte:
-  pha
-  lda #$FF                        ; set PORTB as output
-  sta DDRB
 uart_write_byte_loop:
+  pha
   lda #UART_WRITE_BUSY_MASK
-  and PORTA
-  bne uart_write_byte_loop        ; can't write, um245 busy
-
+  and UART_STATUS
+  bne uart_write_byte_loop        ; can't transfer yet cause TXE is high
   pla
-  sta PORTB                       ; store the byte to PORTB 
-
-  lda #%11111110                   ; strobe W#
-  and PORTA
-  sta PORTA
-
-  lda #%00000001
-  ora PORTA
-  sta PORTA
-
+  sta UART_WRITE
   rts
 
 
@@ -147,7 +95,7 @@ _data_read:  .res 2, $00 ;
 .proc    _serial_readline: near
   sta _data_read       ;  Set zero page pointer to string address
   stx _data_read+1     ;    (pointer passed in via the A/X registers)
-  ldy #$00
+  ldy #00
   jsr uart_read
   rts
 .endproc
@@ -155,29 +103,15 @@ _data_read:  .res 2, $00 ;
 uart_read:
 uart_read_loop:
   lda #UART_READ_NO_DATA_MASK
-  and PORTA
+  and UART_STATUS
   bne uart_read_loop        ; can't read, no data
 
-  lda #%11111101            ; strobe R#
-  and PORTA
-  sta PORTA
-
-  lda PORTB
-  pha
-
-  lda #%00000010
-  ora PORTA
-  sta PORTA
-
-  pla
+  lda UART_READ
   beq read_uart_loop_exit   ; exit if byte received is the zero value
 
   sta (_data_read),y        ;zero page address, see Post-Indexed Indirect, "(Zero-Page),Y"
                             ; https://www.masswerk.at/6502/6502_instruction_set.html
-
   iny
-  bne uart_read_loop         ; If Y hasn't wrapped around, continue loop
-  inc _data_read+1           ; If Y wrapped around, increment the high byte of the address
   jmp uart_read_loop
 
 read_uart_loop_exit:
@@ -194,37 +128,13 @@ read_uart_loop_exit:
 .endproc
 
 uart_read_byte:
-  lda #%00000000  ; set PORTB as input
-  sta DDRB
 uart_read_byte_loop:
   lda #UART_READ_NO_DATA_MASK
-  and PORTA
+  and UART_STATUS
   bne uart_read_byte_loop        ; can't read, no data
-
-  lda #%11111101                 ; strobe R#
-  and PORTA
-  sta PORTA
-
-  ; nop
-  ; nop
-  ; nop
-  ; nop
-  ; nop
-  
-  lda PORTB
-  pha
-
-  lda #%00000010
-  ora PORTA
-  sta PORTA
-
-  ; nop
-  ; nop
-  ; nop
-
-  pla
 
   ; set return value 
   ; low word  : (A low byte, X high byte)
+  lda UART_READ
   ldx #$00
   rts

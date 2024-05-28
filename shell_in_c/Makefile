@@ -31,6 +31,7 @@ build:
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/io.o io.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/counter.o counter.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/um245.o um245.s
+	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/spi.o spi.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/vectors.o vectors.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/interrupt.o interrupt.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/wait.o wait.s
@@ -58,14 +59,13 @@ build:
 	  $(BUILD_DIR)/wozmon.o \
 	  $(BUILD_DIR)/wozmon_tramp.o \
 	  $(BUILD_DIR)/serial.o \
+	  $(BUILD_DIR)/spi.o \
 	  $(BUILD_DIR)/main.o \
 	  $(BUILD_DIR)/supervision.lib
 
 
-
-
 install:
-	minipro -p AT28C64B -w $(BUILD_DIR)/kernel.bin
+	minipro -p AT28C256 -uP -w $(BUILD_DIR)/kernel.bin
 
 all: build install
 

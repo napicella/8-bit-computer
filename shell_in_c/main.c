@@ -7,14 +7,16 @@
 #include "fs.h"
 #include "io.h"
 #include "lcd.h"
+#include "spi.h"
 #include "um245.h"
 
 extern uint16_t __fastcall__ wozmon_run();
 bool fs_inode_print(Inode* inode_ptr);
 
+
 Disk* disk;
 FileSystem* fs;
-bool fs_mounted;
+bool fs_mounted = false;
 
 void info();
 void shell_fs_print_info();
@@ -25,12 +27,39 @@ void shell_fs_read();
 void shell_fs_stat(char* buff);
 void shell_fs_find();
 
+int my_strncmp(const char* s1, const char* s2, size_t count) {
+  int currentIndex = 0;
+  while (currentIndex < count) {
+    if (s1[currentIndex] == '\0' && s2[currentIndex] == '\0') {
+      return 0;
+    }
+    if (s1[currentIndex] == '\0' || s2[currentIndex] == '\0') {
+      if (s1[currentIndex] == '\0') {
+        return -1;
+      }
+      if (s2[currentIndex] == '\0') {
+        return 1;
+      }
+    }
+
+    if (s1[currentIndex] == s2[currentIndex]) {
+      currentIndex++;
+      continue;
+    }
+
+    return s1[currentIndex] - s2[currentIndex];
+  }
+}
+
 void main(void) {
   char motd[] = "*\n**\n**** pactvm6502 v0.1\n**\n*\n";
   const size_t buff_size = 64;
   char currChar;
   int currentIndex = 0;
   char* buff = (char*)malloc(sizeof(char) * buff_size);
+  int i = 0;
+  bool fmtResult;
+  serial_init();
 
   disk = (Disk*)malloc(sizeof(Disk));
   if (disk == NULL) {
@@ -54,44 +83,47 @@ void main(void) {
     currentIndex++;
     if (currChar == '\r') {
       // terminal sends LF on Enter key
-
       // write newline
       serial_writebyte('\n');
-      currentIndex = 0;
 
-      if (strncmp(buff, "info", 4) == 0) {
+      if (my_strncmp(buff, "info", 4) == 0) {
         info();
-      } else if (strncmp(buff, "fsfmt", 5) == 0) {
-        fs_format(disk);
-      } else if (strncmp(buff, "fsmnt", 5) == 0) {
+      } else if (my_strncmp(buff, "fsfmt", 5) == 0) {
+        fmtResult = fs_format(disk);
+        if (!fmtResult) {
+          serial_writeline("error fmt");
+        }
+      } else if (my_strncmp(buff, "fsmnt", 5) == 0) {
+        serial_writeline("ACK mnt\n");
         fs_mount(fs, disk);
         fs_mounted = true;
-      } else if (strncmp(buff, "fscreate", 8) == 0) {
+      } else if (my_strncmp(buff, "fscreate", 8) == 0) {
+        serial_writeline("ACK create\n");
         shell_fs_create();
-      } else if (strncmp(buff, "fsread", 6) == 0) {
+      } else if (my_strncmp(buff, "fsread", 6) == 0) {
         shell_fs_read(buff);
-      } else if (strncmp(buff, "fswrite", 7) == 0) {
+      } else if (my_strncmp(buff, "fswrite", 7) == 0) {
         shell_fs_write(buff);
-      } else if (strncmp(buff, "fsstat", 6) == 0) {
+      } else if (my_strncmp(buff, "fsstat", 6) == 0) {
         shell_fs_stat(buff);
-      } else if (strncmp(buff, "fsfind", 6) == 0) {
+      } else if (my_strncmp(buff, "fsfind", 6) == 0) {
         shell_fs_find();
-      } else if (strncmp(buff, "ledon", 5) == 0) {
+      } else if (my_strncmp(buff, "ledon", 5) == 0) {
         ledOn();
-        serial_writeline("\n> ");
-      } else if (strncmp(buff, "ledoff", 6) == 0) {
+      } else if (my_strncmp(buff, "ledoff", 6) == 0) {
         ledOff();
-      } else if (strncmp(buff, "wozmon", 6) == 0) {
+      } else if (my_strncmp(buff, "wozmon", 6) == 0) {
         wozmon_run();
       } else {
-        serial_writeline("command not found\n");
+        serial_writeline("cmd not found:\n");
       }
-
+      currentIndex = 0;
       memset(buff, 0, buff_size);
       serial_writeline("\n> ");
     }
   }
 }
+
 
 void info() {
   size_t memAvail = __heapmemavail();
@@ -107,7 +139,7 @@ void shell_fs_print_info() {
   fs_info_res* res;
   char* data;
 
-  data = (char*)malloc(sizeof(char) * 128);
+  data = (char*)malloc(sizeof(char) * 512);
   if (data == NULL) {
     return;
   }
@@ -121,15 +153,18 @@ void shell_fs_print_info() {
   sprintf(data, "fs_tot_blocks %lu\nfree_blocks: %lu\ninode_reserved: %lu\n\r",
           res->total_blocks, res->free_blocks, res->reserved_for_inodes);
   serial_writeline(data);
-  fs_inodes_walk(fs, fs_inode_print);
+  // fs_inodes_walk(fs, fs_inode_print);
   free(data);
   free(res);
 }
 
 void shell_fs_mount() {
   if (!fs_mounted) {
+    serial_writeline("mounting fs\n");
     fs_mount(fs, disk);
     fs_mounted = true;
+  } else {
+    serial_writeline("fs already mounted\n");
   }
 }
 
@@ -137,6 +172,7 @@ void shell_fs_create() {
   int inode;
   char* data;
 
+  serial_writeline("create request\n");
   shell_fs_mount();
 
   data = (char*)malloc(sizeof(char) * 128);
@@ -150,36 +186,46 @@ void shell_fs_create() {
 }
 
 void shell_fs_write(char* buff) {
-  ssize_t res;
-  char* log_buff;
-  char data[64];
-  size_t inode_read = 0;
+  ssize_t write_res;
   int scan_res;
-  int i;
-  for (i = 0; i < 64; i++) {
-    data[i] = '\0';
-  }
 
-  // scanf "c" type specifier
-  // Single character: Reads the next character. If a width different from 1 is
-  // specified, the function reads width characters and stores them in the
-  // successive locations of the array passed as argument. No null character is
-  // appended at the end.
-  scan_res = sscanf(buff, "fswrite %hu %63c", &inode_read, data);
-  serial_writeline_f("input inode: %hu\n", inode_read);
+  char* data;
+  short unsigned int inode_read = 0;
+  int i = 0;
+  
+  // Space for 63 characters plus string terminator
+  data = (char*)malloc(64 * sizeof(char));
+  memset(data, 0, 64); 
+
+  // Note: scanf "%[Number]c" type specifier does not seem to work
+  scan_res = sscanf(buff, "fswrite %hu", &inode_read);
   if (scan_res < 1 || scan_res == EOF) {
     serial_writeline_f("invalid fswrite format: %d", scan_res);
     return;
   }
-
+  
+  serial_writebyte('\n');
+  i = 0;
+  while(i < 63) {
+    data[i] = serial_readbyte();
+    serial_writebyte(data[i]); // echo
+    if (i > 2) {
+      if (data[i-2] == 'E' && data[i-1] == 'O' && data[i] == 'F') {
+        break;
+      }
+    }
+    i++;
+  }
+  if (strlen(data) - 3 <= 0) {
+    return;
+  }
+   
+  serial_writeline_f("input inode: %hu\n", inode_read);
   shell_fs_mount();
 
-  res = fs_write(fs, inode_read, data, strlen(data), 0);
-  if (res != 0) {
-    log_buff = (char*)malloc(sizeof(char) * 16);
-    sprintf(log_buff, "error: %d\n", res);
-    serial_writeline(log_buff);
-    free(log_buff);
+  write_res = fs_write(fs, inode_read, data, strlen(data) - 3, 0);
+  if (write_res != 0) {
+    serial_writeline_f("error: %d\n", write_res);
   }
 }
 
@@ -261,19 +307,16 @@ bool fs_inode_print(Inode* inode_ptr) {
   free(data);
 }
 
-
-
-
 void shell_fs_find() {
-  struct tablec_bucket *bucket;
+  struct tablec_bucket* bucket;
   int inode;
   shell_fs_mount();
-  //tablec_set(fs->inodes_name_map, "root", (void *)42);
+  // tablec_set(fs->inodes_name_map, "root", (void *)42);
 
   // bucket = tablec_get(fs->inodes_name_map, "root");
   // if (bucket == NULL) {
   //   return;
   // }
-  inode = fs_find(fs);
+  inode = fs_find(fs, "root");
   serial_writeline_f("[TableC]: Value of the key \"root\": %d\n", (int)inode);
 }

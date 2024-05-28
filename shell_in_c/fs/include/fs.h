@@ -87,5 +87,5 @@ ssize_t fs_write(FileSystem *fs, size_t inode_number, char *data, size_t length,
 void fs_info(FileSystem *fs, fs_info_res* res);
 bool fs_inodes_walk(FileSystem *fs, void (*visitor)(Inode*));
 
-ssize_t fs_find(FileSystem *fs);
+int fs_find(FileSystem *fs, char* name);
 #endif
