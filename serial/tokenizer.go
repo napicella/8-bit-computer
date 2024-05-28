@@ -15,13 +15,16 @@ type token struct {
 	data []byte
 }
 
-func newTokenizer() *tokenizer {
+func newTokenizer(logFile *os.File) *tokenizer {
 	return &tokenizer{
 		tokenStart: [tokenLength]uint8{'@', 'c', 'm', 'd', 'm', 'o', 'd', 'e'},
+		logFile:    logFile,
 	}
 }
 
 type tokenizer struct {
+	logFile *os.File
+
 	tokenStart  [tokenLength]uint8
 	currToMatch int
 
@@ -90,8 +93,7 @@ func (t *tokenizer) submit(val uint8) {
 			data := make([]uint8, t.bytesCount)
 			t.bytesCount = 0
 
-			n, err := t.tokenData.Read(data)
-			fmt.Printf("packet end - read %d data %v\n", n, data[:min(10, len(data))])
+			_, err := t.tokenData.Read(data)
 			if err != nil {
 				panic(err)
 			}
@@ -125,7 +127,7 @@ const (
 
 var diskSize = blockSize * numberOfBlocks
 
-func newDisk() (*disk, error) {
+func newDisk(logFile *os.File) (*disk, error) {
 	name := filepath.Join(os.TempDir(), "disk")
 	var shouldInitialize bool
 	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
@@ -148,12 +150,14 @@ func newDisk() (*disk, error) {
 	}
 
 	return &disk{
-		f: f,
+		f:       f,
+		logFile: logFile,
 	}, nil
 }
 
 type disk struct {
-	f *os.File
+	f       *os.File
+	logFile *os.File
 }
 
 func (t *disk) close() {
@@ -170,7 +174,10 @@ func (t *disk) read(sector uint8) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("block read: %s\n", block)
+	fmt.Fprintf(t.logFile, "========\n")
+	fmt.Fprintf(t.logFile, "Read block from disk(size %d)\n", len(block))
+	fmt.Fprintf(t.logFile, "%x\n", block)
+	fmt.Fprintf(t.logFile, "========\n")
 	return block, nil
 }
 
@@ -183,5 +190,8 @@ func (t *disk) write(sector uint8, data []uint8) error {
 	if err != nil {
 		return err
 	}
+	fmt.Fprintf(t.logFile, "========\n")
+	fmt.Fprintf(t.logFile, "Wrote block to disk(size %d)\n", len(data))
+	fmt.Fprintf(t.logFile, "========\n")
 	return nil
 }
