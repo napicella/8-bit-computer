@@ -13,7 +13,6 @@
 extern uint16_t __fastcall__ wozmon_run();
 bool fs_inode_print(Inode* inode_ptr);
 
-
 Disk* disk;
 FileSystem* fs;
 bool fs_mounted = false;
@@ -26,6 +25,7 @@ void shell_fs_mount();
 void shell_fs_read();
 void shell_fs_stat(char* buff);
 void shell_fs_find();
+void shell_spi();
 
 int my_strncmp(const char* s1, const char* s2, size_t count) {
   int currentIndex = 0;
@@ -59,7 +59,6 @@ void main(void) {
   char* buff = (char*)malloc(sizeof(char) * buff_size);
   int i = 0;
   bool fmtResult;
-  serial_init();
 
   disk = (Disk*)malloc(sizeof(Disk));
   if (disk == NULL) {
@@ -73,6 +72,8 @@ void main(void) {
     return;
   }
 
+  spiInit();
+  serial_init();
   serial_writeline(motd);
   serial_writeline("\n> ");
 
@@ -88,6 +89,8 @@ void main(void) {
 
       if (my_strncmp(buff, "info", 4) == 0) {
         info();
+      } else if (my_strncmp(buff, "spi", 3) == 0) {
+        shell_spi();
       } else if (my_strncmp(buff, "fsfmt", 5) == 0) {
         fmtResult = fs_format(disk);
         if (!fmtResult) {
@@ -123,7 +126,6 @@ void main(void) {
     }
   }
 }
-
 
 void info() {
   size_t memAvail = __heapmemavail();
@@ -192,10 +194,10 @@ void shell_fs_write(char* buff) {
   char* data;
   short unsigned int inode_read = 0;
   int i = 0;
-  
+
   // Space for 63 characters plus string terminator
   data = (char*)malloc(64 * sizeof(char));
-  memset(data, 0, 64); 
+  memset(data, 0, 64);
 
   // Note: scanf "%[Number]c" type specifier does not seem to work
   scan_res = sscanf(buff, "fswrite %hu", &inode_read);
@@ -203,14 +205,14 @@ void shell_fs_write(char* buff) {
     serial_writeline_f("invalid fswrite format: %d", scan_res);
     return;
   }
-  
+
   serial_writebyte('\n');
   i = 0;
-  while(i < 63) {
+  while (i < 63) {
     data[i] = serial_readbyte();
-    serial_writebyte(data[i]); // echo
+    serial_writebyte(data[i]);  // echo
     if (i > 2) {
-      if (data[i-2] == 'E' && data[i-1] == 'O' && data[i] == 'F') {
+      if (data[i - 2] == 'E' && data[i - 1] == 'O' && data[i] == 'F') {
         break;
       }
     }
@@ -219,7 +221,7 @@ void shell_fs_write(char* buff) {
   if (strlen(data) - 3 <= 0) {
     return;
   }
-   
+
   serial_writeline_f("input inode: %hu\n", inode_read);
   shell_fs_mount();
 
@@ -319,4 +321,15 @@ void shell_fs_find() {
   // }
   inode = fs_find(fs, "root");
   serial_writeline_f("[TableC]: Value of the key \"root\": %d\n", (int)inode);
+}
+
+void shell_spi() {
+  char c;
+  spiBegin();
+  c = serial_readbyte();
+  while(c != '|') {
+    spiWrite(c);
+    c = serial_readbyte();
+  }
+  spiEnd();
 }

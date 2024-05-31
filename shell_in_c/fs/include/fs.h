@@ -88,4 +88,5 @@ void fs_info(FileSystem *fs, fs_info_res* res);
 bool fs_inodes_walk(FileSystem *fs, void (*visitor)(Inode*));
 
 int fs_find(FileSystem *fs, char* name);
+int min(int a, int b);
 #endif

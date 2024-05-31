@@ -28,7 +28,6 @@ find_result *fs_find_inode(FileSystem *fs, size_t inode_number);
 bool fs_info_inodes(FileSystem *fs, void (*visitor)(Inode *));
 bool fs_find_inode_2(FileSystem *fs, size_t inode_number, Block *block);
 int find_first(int32_t *nums, size_t length, int32_t to_find);
-int min(int a, int b);
 
 bool fs_read_block(Disk *disk, Block *block, size_t blockNum) {
   memset(block, 0, sizeof(Block));
@@ -485,18 +484,18 @@ ssize_t fs_read(FileSystem *fs, size_t inode_number, char *data, size_t length,
   }
   find_res = fs_find_inode_2(fs, inode_number, inode_block);
   if (!find_res) {
-    return -1;
+    return -2;
   }
   inode_ptr = &(inode_block->inodes[offset_inode]);
   if (!inode_ptr->valid || inode_ptr->size == 0) {
     return 0;
   }
   if (inode_ptr->size < length) {
-    return -1;
+    return -3;
   }
   data_block = (Block *)malloc(sizeof(Block));
   if (data_block == NULL) {
-    return -1;
+    return -4;
   }
 
   // for now, ignore offset

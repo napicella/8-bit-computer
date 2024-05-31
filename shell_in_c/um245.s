@@ -47,8 +47,10 @@ UART_READ_NO_DATA_MASK = %00001000
   sta PORTB
 
   lda #%00000011   ; set PORTA first and second bit to output (connected W# and R# on UM245R)
+  ora DDRA
   sta DDRA
   lda #%00000011   ; W# is stable high, R# is stable high
+  ora PORTA
   sta PORTA
   rts
 .endproc
@@ -86,11 +88,11 @@ uart_write_line_loop:
   sta PORTB                       ; store the byte to PORTB 
   
 
-  lda #%11111110                   ; strobe W#
+  lda #%11111110                   ; strobe W# (low)
   and PORTA
   sta PORTA
 
-  lda #%00000001
+  lda #%00000001                   ; (high)
   ora PORTA
   sta PORTA
 
@@ -205,22 +207,12 @@ uart_read_byte_loop:
   and PORTA
   sta PORTA
 
-  ; nop
-  ; nop
-  ; nop
-  ; nop
-  ; nop
-  
   lda PORTB
   pha
 
   lda #%00000010
   ora PORTA
   sta PORTA
-
-  ; nop
-  ; nop
-  ; nop
 
   pla
 

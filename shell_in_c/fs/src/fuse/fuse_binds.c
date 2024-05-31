@@ -17,6 +17,7 @@ Disk *disk;
 FileSystem *fs;
 bool fs_mounted = false;
 
+
 static int do_getattr(const char *path, struct stat *st) {
   printf("[getattr] Called\n");
   printf("\tAttributes of %s requested\n", path);
@@ -53,11 +54,15 @@ static int do_getattr(const char *path, struct stat *st) {
     st->st_nlink = 2;  // Why "two" hardlinks instead of "one"? The answer is
                        // here: http://unix.stackexchange.com/a/101536
   } else {
+    int stat_res = fs_stat(fs, 0);
+    if (stat_res < 0) {
+      return -1;
+    }
+
     st->st_mode = S_IFREG | 0644;
     st->st_nlink = 1;
-    st->st_size = 1024;
+    st->st_size = stat_res;
   }
-
   return 0;
 }
 
@@ -94,6 +99,27 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset,
   //   return -1;
   // memcpy(buffer, selectedText + offset, size);
 
+  int stat_res = fs_stat(fs, 0);
+  if (stat_res < 0) {
+    return -1;
+  }
+  
+  int res = fs_read(fs, 0, buffer, min(stat_res, size), 0);
+  if (res != 0) {
+    printf("fs_read error %d\n", res);
+    return res;
+  }
+
+  return min(stat_res, size);
+}
+
+static struct fuse_operations operations = {
+    .getattr = do_getattr,
+    .readdir = do_readdir,
+    .read = do_read,
+};
+
+int main(int argc, char *argv[]) {
   if (!fs_mounted) {
     disk = (Disk *)malloc(sizeof(Disk));
     if (disk == NULL) {
@@ -105,19 +131,6 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset,
     }
     fs_mount(fs, disk);
     fs_mounted = true;
-  } 
-
-  fs_read(fs, 0, buffer, 512, 0);
-
-  return 512;
-}
-
-static struct fuse_operations operations = {
-    .getattr = do_getattr,
-    .readdir = do_readdir,
-    .read = do_read,
-};
-
-int main(int argc, char *argv[]) {
+  }
   return fuse_main(argc, argv, &operations, NULL);
 }

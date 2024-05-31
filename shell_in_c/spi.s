@@ -1,25 +1,4 @@
-; Copyright (c) 2015, Dieter Hauer
-; All rights reserved.
-; 
-; Redistribution and use in source and binary forms, with or without
-; modification, are permitted provided that the following conditions are met:
-; 
-; 1. Redistributions of source code must retain the above copyright notice, this
-;    list of conditions and the following disclaimer.
-; 2. Redistributions in binary form must reproduce the above copyright notice,
-;    this list of conditions and the following disclaimer in the documentation
-;    and/or other materials provided with the distribution.
-; 
-; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-; ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-; DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-; ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-; (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-; ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+; SPI mode 1 - MOSI, MISO, CLK, CS connected to PORTA DA8, DA7, DA6, DA5
 
 					.setcpu		"6502"
 		
@@ -32,11 +11,11 @@
 					VIA1_BASE   = $8000
 					PRA  = VIA1_BASE+1
 					DDRA = VIA1_BASE+3
-					
-					MOSI = (1 << 2)
-					MISO = (1 << 3)
-					CLK  = (1 << 4)
-					CS   = (1 << 5)
+
+					MOSI = %10000000
+					MISO = %01000000
+					CLK  = %00100000
+					CS   = %00010000
 		
 					.data
 temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for minor speedup
@@ -44,16 +23,20 @@ temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for 
 .segment    "CODE"
 .proc _spiInit: near
 					pha
+					; set clock low, CS unchanged
 					lda #CLK
 					eor #$FF
 					and PRA
 					ora #CS
 					sta PRA
+
+					; set data direction (default is input, so we only set the ones that needs to be output to 1)
 					lda DDRA
 					ora #MOSI
 					ora #CS
 					ora #CLK
 					sta DDRA
+					
 					pla
 					rts
 .endproc
@@ -72,6 +55,7 @@ temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for 
 .segment    "CODE"
 .proc _spiBegin: near
 		 			pha
+					; bring CS low
 					lda #CS
 					eor #$FF
 					and PRA
@@ -125,16 +109,16 @@ temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for 
 					lda temp
 					ldy #8
 @loop:				lda #MOSI
-					asl temp
+					asl temp  			; shift left one bit from temp
 					bcc @is_low
-					ora PRA
+					ora PRA             ; send one
 					sta PRA
 					jmp @is_high
-@is_low:			lda	#MOSI
+@is_low:			lda	#MOSI           ; send zero
 					eor #$FF
 					and PRA
 					sta PRA
-@is_high:			lda #CLK
+@is_high:			lda #CLK            ; strobe CLK
 					ora PRA
 					sta PRA
 					lda #CLK
