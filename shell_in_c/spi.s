@@ -1,4 +1,4 @@
-; SPI mode 1 - MOSI, MISO, CLK, CS connected to PORTA DA8, DA7, DA6, DA5
+; SPI mode 1 - MOSI, MISO, CLK, CS connected to PORTA DA3, DA2, DA1, DA0
 
 					.setcpu		"6502"
 		
@@ -12,10 +12,10 @@
 					PRA  = VIA1_BASE+1
 					DDRA = VIA1_BASE+3
 
-					MOSI = %10000000
-					MISO = %01000000
-					CLK  = %00100000
-					CS   = %00010000
+					MOSI = %00001000
+					MISO = %00000100
+					CLK  = %00000010
+					CS   = %00000001
 		
 					.data
 temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for minor speedup

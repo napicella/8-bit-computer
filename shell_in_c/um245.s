@@ -14,11 +14,11 @@
 ;
 ;
 ; Driver expects the UM245R USB to be connected to the VIA as follows:
-; VIA_PORT_B -> UM245R_DATA
-; VIA_PORT_A [A0] -> UM245R_WE#
-; VIA_PORT_A [A1] -> UM245R_RD#
-; VIA_PORT_A [A2] -> UM245R_TXE
-; VIA_PORT_A [A3] -> UM245R_RXE
+; VIA_PORT_B      -> UM245R_DATA
+; VIA_PORT_A [A7] -> UM245R_WE#
+; VIA_PORT_A [A6] -> UM245R_RD#
+; VIA_PORT_A [A5] -> UM245R_TXE
+; VIA_PORT_A [A4] -> UM245R_RXE
 
 .export _serial_init
 .export _serial_writebyte
@@ -32,24 +32,30 @@ PORTA = $8001
 DDRB  = $8002
 DDRA  = $8003
 
-UART_WRITE_BUSY_MASK   = %00000100
-UART_READ_NO_DATA_MASK = %00001000
+UART_WRITE_BUSY_MASK   = %00100000
+UART_READ_NO_DATA_MASK = %00010000
 
+WE_NOT = %10000000
+RD_NOT = %01000000
 
 ; ---------------------------------------------------------------
 ; void __near__ __fastcall__ serial_init (void)
 ; ---------------------------------------------------------------
 .segment    "CODE"
 .proc _serial_init: near
-  lda #$FF                        ; set PORTB as output
+  lda #$FF                   ; set PORTB as output
   sta DDRB
   lda #$00
   sta PORTB
 
-  lda #%00000011   ; set PORTA first and second bit to output (connected W# and R# on UM245R)
+                             ; set to output the PORTA bits that are connected to WE# and RD# on UM245R
+  lda #WE_NOT
+  ora #RD_NOT
   ora DDRA
   sta DDRA
-  lda #%00000011   ; W# is stable high, R# is stable high
+
+  lda #WE_NOT                ; Both WE# and RD# are stable high, so we initialize them to high
+  ora #RD_NOT
   ora PORTA
   sta PORTA
   rts
@@ -88,17 +94,19 @@ uart_write_line_loop:
   sta PORTB                       ; store the byte to PORTB 
   
 
-  lda #%11111110                   ; strobe W# (low)
+                                  ; strobe W# (low)
+  lda #WE_NOT                     ; Load the bit mask (strobe low)
+  eor #$FF                        ; Invert the bit mask to create the "low" mask (e.g 00000001 -> 11111110)
   and PORTA
   sta PORTA
 
-  lda #%00000001                   ; (high)
+  lda #WE_NOT                     ; (high)
   ora PORTA
   sta PORTA
 
   iny
-  bne uart_write_line_loop   ; If Y hasn't wrapped around, continue loop
-  inc _data+1                ; If Y wrapped around, increment the high byte of the address
+  bne uart_write_line_loop        ; If Y hasn't wrapped around, continue loop
+  inc _data+1                     ; If Y wrapped around, increment the high byte of the address
   jmp uart_write_line_loop
 
 uart_write_line_loop_exit:
@@ -126,11 +134,13 @@ uart_write_byte_loop:
   pla
   sta PORTB                       ; store the byte to PORTB 
 
-  lda #%11111110                   ; strobe W#
+                                  ; strobe W# (low)
+  lda #WE_NOT                     ; Load the bit mask (strobe low)
+  eor #$FF                        ; Invert the bit mask to create the "low" mask (e.g 00000001 -> 11111110)
   and PORTA
   sta PORTA
-
-  lda #%00000001
+ 
+  lda #WE_NOT                     ; strobe W# (high)
   ora PORTA
   sta PORTA
 
@@ -158,24 +168,25 @@ uart_read:
 uart_read_loop:
   lda #UART_READ_NO_DATA_MASK
   and PORTA
-  bne uart_read_loop        ; can't read, no data
+  bne uart_read_loop         ; can't read, no data
 
-  lda #%11111101            ; strobe R#
+  lda #RD_NOT                ; strobe RD# (low)
+  eor #$FF                   ; Invert the bit mask to create the "low" mask
   and PORTA
   sta PORTA
 
   lda PORTB
   pha
 
-  lda #%00000010
+  lda #RD_NOT                ; strobe RD# (high)
   ora PORTA
   sta PORTA
 
   pla
-  beq read_uart_loop_exit   ; exit if byte received is the zero value
+  beq read_uart_loop_exit    ; exit if byte received is the zero value
 
-  sta (_data_read),y        ;zero page address, see Post-Indexed Indirect, "(Zero-Page),Y"
-                            ; https://www.masswerk.at/6502/6502_instruction_set.html
+  sta (_data_read),y         ;zero page address, see Post-Indexed Indirect, "(Zero-Page),Y"
+                             ; https://www.masswerk.at/6502/6502_instruction_set.html
 
   iny
   bne uart_read_loop         ; If Y hasn't wrapped around, continue loop
@@ -196,21 +207,22 @@ read_uart_loop_exit:
 .endproc
 
 uart_read_byte:
-  lda #%00000000  ; set PORTB as input
+  lda #%00000000                 ; set PORTB as input
   sta DDRB
 uart_read_byte_loop:
   lda #UART_READ_NO_DATA_MASK
   and PORTA
   bne uart_read_byte_loop        ; can't read, no data
 
-  lda #%11111101                 ; strobe R#
+  lda #RD_NOT                    ; strobe RD# (low)
+  eor #$FF                       ; Invert the bit mask to create the "low" mask
   and PORTA
   sta PORTA
 
   lda PORTB
   pha
 
-  lda #%00000010
+  lda #RD_NOT
   ora PORTA
   sta PORTA
 
