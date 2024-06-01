@@ -41,8 +41,11 @@ RD_NOT = %01000000
 ; ---------------------------------------------------------------
 ; void __near__ __fastcall__ serial_init (void)
 ; ---------------------------------------------------------------
+;
+; function preserves all registers (it only uses the register A)
 .segment    "CODE"
 .proc _serial_init: near
+  pha
   lda #$FF                   ; set PORTB as output
   sta DDRB
   lda #$00
@@ -58,6 +61,8 @@ RD_NOT = %01000000
   ora #RD_NOT
   ora PORTA
   sta PORTA
+  
+  pla
   rts
 .endproc
 
@@ -65,6 +70,8 @@ RD_NOT = %01000000
 ; ---------------------------------------------------------------
 ; void __near__ __fastcall__ serial_writeline (char*)
 ; ---------------------------------------------------------------
+;
+; function preserves all registers
 .zeropage
 ; Reserve a local zero page pointer to store the char*
 ; which points to the data to write to the serial
@@ -72,10 +79,18 @@ _data:    .res 2, $00
 
 .segment    "CODE"
 .proc _serial_writeline: near
+  pha
+  phx
+  phy
+
   sta _data       ;  Set zero page pointer to string address
   stx _data+1     ;    (pointer passed in via the A/X registers)
   ldy #$00
   jsr uart_write_line
+  
+  pla
+  plx
+  ply
   rts
 .endproc
 
@@ -116,14 +131,21 @@ uart_write_line_loop_exit:
 ; ---------------------------------------------------------------
 ; void __near__ __fastcall__ serial_writebyte (char)
 ; ---------------------------------------------------------------
+;
+; function preserves all registers (it only uses the register A)
+.zeropage
+; Reserve a local zero page pointer to store the A register
+_a_saved:    .res 1, $00
+
 .segment    "CODE"
 .proc _serial_writebyte: near
+  sta _a_saved
   jsr uart_write_byte
+  lda _a_saved
   rts
 .endproc
 
 uart_write_byte:
-  pha
   lda #$FF                        ; set PORTB as output
   sta DDRB
 uart_write_byte_loop:
@@ -131,7 +153,7 @@ uart_write_byte_loop:
   and PORTA
   bne uart_write_byte_loop        ; can't write, um245 busy
 
-  pla
+  lda _a_saved
   sta PORTB                       ; store the byte to PORTB 
 
                                   ; strobe W# (low)
@@ -150,6 +172,8 @@ uart_write_byte_loop:
 ; ---------------------------------------------------------------
 ; void __near__ __fastcall__ serial_readline (char*)
 ; ---------------------------------------------------------------
+;
+; function does NOT preserve registers
 .zeropage
 ; Reserve a local zero page pointer to store the char*
 ; where the data read should be stored in memory
@@ -200,6 +224,9 @@ read_uart_loop_exit:
 ; ---------------------------------------------------------------
 ; void __near__ __fastcall__ char serial_readbyte ()
 ; ---------------------------------------------------------------
+;
+; function does NOT preserve registers, at the end of the function
+; A contains the byte read, X contains all zero)
 .segment    "CODE"
 .proc _serial_readbyte: near
   jsr uart_read_byte

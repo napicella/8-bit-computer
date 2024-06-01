@@ -1,4 +1,12 @@
   .setcpu "65sc02"
+  .import _serial_init
+  .import _serial_writebyte
+  .import _serial_readbyte
+
+  .zeropage
+  ; Reserve a local zero page pointer to store the Input buffer
+  IN:    .res 128, $00
+
   .segment "WOZMON"
 
 XAML  = $24                            ; Last "opened" location Low
@@ -10,18 +18,11 @@ H     = $29                            ; Hex value parsing High
 YSAV  = $2A                            ; Used to see if hex value is given
 MODE  = $2B                            ; $00=XAM, $7F=STOR, $AE=BLOCK XAM
 
-IN    = $0200                          ; Input buffer
-
-
-UART_WRITE  = %1000010000000001
-UART_READ   = %1000010000000010
-UART_STATUS = %1000010000000100
-UART_WRITE_BUSY_MASK   = %00000001
-UART_READ_NO_DATA_MASK = %00000010
 
 RESET:
                 CLD
                 CLI
+                JSR     _serial_init
                 LDA     #$1B           ; To fall-through the NEXTCHAR
 
 NOTCR:
@@ -47,10 +48,7 @@ BACKSPACE:      DEY                    ; Back up text index.
                 BMI     GETLINE        ; Beyond start of line, reinitialize.
 
 NEXTCHAR:
-                LDA     UART_STATUS    ; Check status.
-                AND     #UART_READ_NO_DATA_MASK           ; Key ready?
-                BNE     NEXTCHAR       ; Loop until ready.
-                LDA     UART_READ      ; Load character. B7 will be '0'.
+                JSR     _serial_readbyte
                 STA     IN,Y           ; Add to text buffer.
                 JSR     ECHO           ; Display character.
                 CMP     #$0D           ; CR?
@@ -136,8 +134,8 @@ NXTPRNT:
                 BNE     PRDATA         ; NE means no address to print.
                 LDA     #$0D           ; CR.
                 JSR     ECHO           ; Output it.
-                LDA     #$0A            ; LF.
-                JSR     ECHO            ; Output it.
+                LDA     #$0A           ; LF.
+                JSR     ECHO           ; Output it.
                 LDA     XAMH           ; 'Examine index' high-order byte.
                 JSR     PRBYTE         ; Output it in hex format.
                 LDA     XAML           ; Low-order 'examine index' byte.
@@ -183,7 +181,5 @@ PRHEX:
                 ADC     #$06           ; Add offset for letter.
 
 ECHO:
-                PHA                    ; Save A.
-                STA     UART_WRITE     ; Output character.
-                PLA                    ; Restore A.
+                JSR     _serial_writebyte
                 RTS                    ; Return.
