@@ -20,17 +20,12 @@
 ; VIA_PORT_A [A5] -> UM245R_TXE
 ; VIA_PORT_A [A4] -> UM245R_RXE
 
+.include "hardware.inc"
 .export _serial_init
 .export _serial_writebyte
 .export _serial_writeline
 .export _serial_readline
 .export _serial_readbyte
-
-
-PORTB = $8000
-PORTA = $8001
-DDRB  = $8002
-DDRA  = $8003
 
 UART_WRITE_BUSY_MASK   = %00100000
 UART_READ_NO_DATA_MASK = %00010000
@@ -46,21 +41,21 @@ RD_NOT = %01000000
 .segment    "CODE"
 .proc _serial_init: near
   pha
-  lda #$FF                   ; set PORTB as output
-  sta DDRB
+  lda #$FF                   ; set VIA_PORTB as output
+  sta VIA_DDRB
   lda #$00
-  sta PORTB
+  sta VIA_PORTB
 
-                             ; set to output the PORTA bits that are connected to WE# and RD# on UM245R
+                             ; set to output the VIA_PORTA bits that are connected to WE# and RD# on UM245R
   lda #WE_NOT
   ora #RD_NOT
-  ora DDRA
-  sta DDRA
+  ora VIA_DDRA
+  sta VIA_DDRA
 
   lda #WE_NOT                ; Both WE# and RD# are stable high, so we initialize them to high
   ora #RD_NOT
-  ora PORTA
-  sta PORTA
+  ora VIA_PORTA
+  sta VIA_PORTA
   
   pla
   rts
@@ -95,29 +90,29 @@ _data:    .res 2, $00
 .endproc
 
 uart_write_line:
-  lda #$FF                        ; set PORTB as output
-  sta DDRB
+  lda #$FF                        ; set VIA_PORTB as output
+  sta VIA_DDRB
 uart_write_line_loop:
   lda #UART_WRITE_BUSY_MASK
-  and PORTA
+  and VIA_PORTA
   bne uart_write_line_loop        ; can't write, um245 busy
 
   lda (_data),y                   ; zero page address, see Post-Indexed Indirect, "(Zero-Page),Y"
                                   ; https://www.masswerk.at/6502/6502_instruction_set.html
   beq uart_write_line_loop_exit   ; if NULL byte exit
                                   ; otherwise
-  sta PORTB                       ; store the byte to PORTB 
+  sta VIA_PORTB                       ; store the byte to VIA_PORTB 
   
 
                                   ; strobe W# (low)
   lda #WE_NOT                     ; Load the bit mask (strobe low)
   eor #$FF                        ; Invert the bit mask to create the "low" mask (e.g 00000001 -> 11111110)
-  and PORTA
-  sta PORTA
+  and VIA_PORTA
+  sta VIA_PORTA
 
   lda #WE_NOT                     ; (high)
-  ora PORTA
-  sta PORTA
+  ora VIA_PORTA
+  sta VIA_PORTA
 
   iny
   bne uart_write_line_loop        ; If Y hasn't wrapped around, continue loop
@@ -146,25 +141,25 @@ _a_saved:    .res 1, $00
 .endproc
 
 uart_write_byte:
-  lda #$FF                        ; set PORTB as output
-  sta DDRB
+  lda #$FF                        ; set VIA_PORTB as output
+  sta VIA_DDRB
 uart_write_byte_loop:
   lda #UART_WRITE_BUSY_MASK
-  and PORTA
+  and VIA_PORTA
   bne uart_write_byte_loop        ; can't write, um245 busy
 
   lda _a_saved
-  sta PORTB                       ; store the byte to PORTB 
+  sta VIA_PORTB                       ; store the byte to VIA_PORTB 
 
                                   ; strobe W# (low)
   lda #WE_NOT                     ; Load the bit mask (strobe low)
   eor #$FF                        ; Invert the bit mask to create the "low" mask (e.g 00000001 -> 11111110)
-  and PORTA
-  sta PORTA
+  and VIA_PORTA
+  sta VIA_PORTA
  
   lda #WE_NOT                     ; strobe W# (high)
-  ora PORTA
-  sta PORTA
+  ora VIA_PORTA
+  sta VIA_PORTA
 
   rts
 
@@ -191,20 +186,20 @@ _data_read:  .res 2, $00 ;
 uart_read:
 uart_read_loop:
   lda #UART_READ_NO_DATA_MASK
-  and PORTA
+  and VIA_PORTA
   bne uart_read_loop         ; can't read, no data
 
   lda #RD_NOT                ; strobe RD# (low)
   eor #$FF                   ; Invert the bit mask to create the "low" mask
-  and PORTA
-  sta PORTA
+  and VIA_PORTA
+  sta VIA_PORTA
 
-  lda PORTB
+  lda VIA_PORTB
   pha
 
   lda #RD_NOT                ; strobe RD# (high)
-  ora PORTA
-  sta PORTA
+  ora VIA_PORTA
+  sta VIA_PORTA
 
   pla
   beq read_uart_loop_exit    ; exit if byte received is the zero value
@@ -234,24 +229,24 @@ read_uart_loop_exit:
 .endproc
 
 uart_read_byte:
-  lda #%00000000                 ; set PORTB as input
-  sta DDRB
+  lda #%00000000                 ; set VIA_PORTB as input
+  sta VIA_DDRB
 uart_read_byte_loop:
   lda #UART_READ_NO_DATA_MASK
-  and PORTA
+  and VIA_PORTA
   bne uart_read_byte_loop        ; can't read, no data
 
   lda #RD_NOT                    ; strobe RD# (low)
   eor #$FF                       ; Invert the bit mask to create the "low" mask
-  and PORTA
-  sta PORTA
+  and VIA_PORTA
+  sta VIA_PORTA
 
-  lda PORTB
+  lda VIA_PORTB
   pha
 
   lda #RD_NOT
-  ora PORTA
-  sta PORTA
+  ora VIA_PORTA
+  sta VIA_PORTA
 
   pla
 

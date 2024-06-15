@@ -1,15 +1,11 @@
+; Use VIA_T1 counter to setup a timer
+;
+;
 .importzp sreg
+.include "hardware.inc"
 .export _millis
 .export _counter_init
 .export _counter_irq
-
-PORT_B=$8000
-PORT_B_DIR=$8002
-T1_LOWER_ORDER_COUNT=$8004
-T1_HIGH_ORDER_COUNT=$8005
-ACR=$800B
-IER=$800E
-
 
 ; reserving space for counter in the zero page
 .zeropage
@@ -52,11 +48,7 @@ counter_init:
   sta counter       ; initialize counter to zero
 
   lda #%01000000
-  sta ACR           ; set VIA timer T1 in continuos interrupt
-
-  lda #%11000000
-  sta IER           ; enable interrupts on VIA
-  cli               ; enable interrupts on CPU
+  sta VIA_ACR           ; set VIA timer T1 in continuos interrupt
 
  ; The counter decrements at each clock cycle. When in reaches zero
  ; it interrupts and then restart the counter. Note the interrupt
@@ -68,14 +60,14 @@ counter_init:
  ; every 10.000 cycles, we need to load the counter with 9998, or 
  ; $270E in hex.
   lda #$0E
-  sta T1_LOWER_ORDER_COUNT
+  sta VIA_T1CL
 
   lda #$27
-  sta T1_HIGH_ORDER_COUNT   ; load the counter and starts it
+  sta VIA_T1CH   ; load the counter and starts it
   rts
 
 _counter_irq:
-  bit T1_LOWER_ORDER_COUNT  ; reset VIA interrupt (achieved by reading T1 lower).
+  bit VIA_T1CL  ; reset VIA interrupt (achieved by reading T1 lower).
                             ; This makes the counter restart
   inc counter
   bne counter_exit_irq

@@ -1,16 +1,25 @@
 ; SPI mode 1 - MOSI, MISO, CLK, CS connected to PORTA DA3, DA2, DA1, DA0
+;
+;
+; Example With Rasberry Pico
+; 
+; The PICO has two SPI ports, each one can be assigned to different pins according to the datasheet.
+; ```
+; #define PIN_SCK 10
+; #define PIN_MISO 11  // TX
+; #define PIN_MOSI 12  // RX
+; #define PIN_CS 13
+; ```
+; In slave mode, TX is MISO. In master it would be MOSI. 
 
 					.setcpu		"6502"
-		
+
+					.include "hardware.inc"
 					.export _spiRead
 					.export _spiWrite
 					.export _spiBegin
 					.export _spiEnd
 					.export _spiInit
-		
-					VIA1_BASE   = $8000
-					PRA  = VIA1_BASE+1
-					DDRA = VIA1_BASE+3
 
 					MOSI = %00001000
 					MISO = %00000100
@@ -26,16 +35,16 @@ temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for 
 					; set clock low, CS unchanged
 					lda #CLK
 					eor #$FF
-					and PRA
+					and VIA_PORTA
 					ora #CS
-					sta PRA
+					sta VIA_PORTA
 
 					; set data direction (default is input, so we only set the ones that needs to be output to 1)
-					lda DDRA
+					lda VIA_DDRA
 					ora #MOSI
 					ora #CS
 					ora #CLK
-					sta DDRA
+					sta VIA_DDRA
 					
 					pla
 					rts
@@ -44,9 +53,9 @@ temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for 
 .segment    "CODE"
 .proc _spiEnd: near
 					pha
-					lda PRA
+					lda VIA_PORTA
 					ora #CS	
-					sta PRA
+					sta VIA_PORTA
 					pla
 					rts
 .endproc					
@@ -58,8 +67,8 @@ temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for 
 					; bring CS low
 					lda #CS
 					eor #$FF
-					and PRA
-					sta PRA
+					and VIA_PORTA
+					sta VIA_PORTA
 					pla
 					rts	
 .endproc
@@ -74,16 +83,16 @@ temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for 
 					lda #$00
 					sta temp
 					lda #MOSI
-					ora PRA
-					sta PRA
+					ora VIA_PORTA
+					sta VIA_PORTA
 					ldy #8
 @loop:				lda #CLK
-					ora PRA
-					sta PRA
-					ldx PRA
+					ora VIA_PORTA
+					sta VIA_PORTA
+					ldx VIA_PORTA
 					lda #CLK
-					eor PRA
-					sta PRA
+					eor VIA_PORTA
+					sta VIA_PORTA
 					clc
 					txa
 					and #MISO
@@ -111,19 +120,19 @@ temp:				.byte 00	; used for shift in/out bits via carry, put into zeropage for 
 @loop:				lda #MOSI
 					asl temp  			; shift left one bit from temp
 					bcc @is_low
-					ora PRA             ; send one
-					sta PRA
+					ora VIA_PORTA             ; send one
+					sta VIA_PORTA
 					jmp @is_high
 @is_low:			lda	#MOSI           ; send zero
 					eor #$FF
-					and PRA
-					sta PRA
+					and VIA_PORTA
+					sta VIA_PORTA
 @is_high:			lda #CLK            ; strobe CLK
-					ora PRA
-					sta PRA
+					ora VIA_PORTA
+					sta VIA_PORTA
 					lda #CLK
-					eor PRA
-					sta PRA
+					eor VIA_PORTA
+					sta VIA_PORTA
 					dey
 					bne @loop
 					pla
