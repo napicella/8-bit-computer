@@ -241,6 +241,7 @@ __Links__
 - wozmon - https://gist.github.com/beneater/8136c8b7f2fd95ccdd4562a498758217/revisions
 - wozmon instructions - https://youtu.be/HlLCtjJzHVI?si=5ztiLEWpOD5SaC5g
 - msbasic - https://github.com/beneater/msbasic/commit/a15c8e0fdf620c800913cbb709df4042ab5c8dad
+- preemptive scheduler - https://lambdascheme.com/preempt.html
 
 ### How to have ca65 output as raw binary
 __You can't.__
