@@ -1,9 +1,10 @@
+#ifndef DEVICES_HEADER_H
+#define DEVICES_HEADER_H
+
+#include "vremu6522_wrapper.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-#ifndef DEVICES_HEADER_H
-#define DEVICES_HEADER_H
 
 // Define the Ram type
 //
@@ -74,5 +75,7 @@ uint16_t Um245_Start();
 uint32_t Um245_Length();
 uint8_t Um245_Read(uint16_t addr, Um245 *spy);
 void Um245_Write(uint16_t addr, uint8_t val, Um245 *spy);
+
+VrEmu6522* Create6522();
 
 #endif

@@ -1,3 +1,6 @@
 [submodule "sim/modules/vrEmu6502"]
 	path = sim/modules/vrEmu6502
 	url = https://github.com/visrealm/vrEmu6502.git
+[submodule "sim/modules/vrEmu6522"]
+	path = sim/modules/vrEmu6522
+	url = https://github.com/visrealm/vrEmu6522.git

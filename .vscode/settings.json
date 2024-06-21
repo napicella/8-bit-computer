@@ -36,7 +36,12 @@
         "typeinfo": "c",
         "utility": "c",
         "hash.h": "c",
-        "fs.h": "c"
+        "fs.h": "c",
+        "ranges": "c",
+        "vremu6502.h": "c",
+        "devices.h": "c",
+        "bus.h": "c",
+        "device.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled",
     "cmake.configureOnOpen": false,

@@ -1,11 +1,12 @@
 .DEFAULT_GOAL := run
 
 CC = gcc
-CFLAGS = -g -Wall -Wextra -std=c99 -I../modules/vrEmu6502/src
-LDFLAGS = -L../modules/vrEmu6502/bin/src -lvrEmu6502
+CFLAGS = -g -Wall -Wextra -std=c99 -I../modules/vrEmu6502/src -I../modules/vrEmu6522/src
+LDFLAGS = -L../modules/vrEmu6502/bin/src -lvrEmu6502 -L../modules/vrEmu6522/bin/src -lvrEmu6522
 SRCDIR = .
 OBJDIR = bin
 TARGET = $(OBJDIR)/my_program
+LD_PATH = ../modules/vrEmu6502/bin/src:../modules/vrEmu6522/bin/src:$(LD_LIBRARY_PATH)
 
 # List of source files
 SRCS = $(wildcard $(SRCDIR)/*.c)
@@ -26,8 +27,10 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 clean:
 	rm -rf $(OBJDIR)
 
+build: $(TARGET)
+
 run: $(TARGET)
-	LD_LIBRARY_PATH=../modules/vrEmu6502/bin/src:$(LD_LIBRARY_PATH) $(TARGET) > /dev/null
+	LD_LIBRARY_PATH=$(LD_PATH) $(TARGET) > /dev/null
 
 run-log: $(TARGET)
 	LD_LIBRARY_PATH=../modules/vrEmu6502/bin/src:$(LD_LIBRARY_PATH) $(TARGET)

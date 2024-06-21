@@ -5,7 +5,7 @@
 
 #include "bus.h"
 #include "devices.h"
-#include "vrEmu6502.h"
+#include "vremu6502_wrapper.h"
 
 Bus* bus;
 
@@ -19,11 +19,13 @@ void My6502MemoryWriteFunction(uint16_t addr, uint8_t val) {
 
 /* fill rom with something that makes sense here */
 int main() {
-  bus = malloc(sizeof(Bus));
+  bus = (Bus*) malloc(sizeof(Bus));
   bus->ram = CreateRam();
   bus->rom = CreateRom();
   bus->spy = CreateSpy();
   bus->um245 = CreateUm245();
+  bus->via = Create6522();
+
 
   // /* create a new WDC 65C02. */
   VrEmu6502* my6502 = vrEmu6502New(CPU_W65C02, My6502MemoryReadFunction,
@@ -56,7 +58,7 @@ int main() {
 
       //   /* interrupt it? */
       //   if (myHardwareWantsAttention) {
-      //     *irq = IntRequested;
+      //     *irq = vrEmu6502_IntRequested;
 
       //     /* at some point, the hardware will be happy and it will need to
       //     release
