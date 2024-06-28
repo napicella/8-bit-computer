@@ -45,6 +45,7 @@ int main() {
       // uint8_t opCode = vrEmu6502GetNextOpcode(my6502);
       // printf("%s\n", vrEmu6502OpcodeToMnemonicStr(my6502, opCode));
       vrEmu6502Tick(my6502);
+      vrEmu6522Tick(bus->via);
 
       uint8_t op = vrEmu6502GetCurrentOpcode(my6502);
       const char* opString = vrEmu6502OpcodeToMnemonicStr(my6502, op);

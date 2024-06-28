@@ -77,5 +77,8 @@ uint8_t Um245_Read(uint16_t addr, Um245 *spy);
 void Um245_Write(uint16_t addr, uint8_t val, Um245 *spy);
 
 VrEmu6522* Create6522();
+uint16_t Via6522_Start();
+uint32_t Via6522_Length();
+
 
 #endif

@@ -54,9 +54,9 @@ void LoadFromFile(Rom *rom, const char *filepath) {
 }
 
 Rom* CreateRom() {
-    Rom* rom = malloc(sizeof(Rom));
+    Rom* rom = (Rom*) malloc(sizeof(Rom));
     char file[256]; 
-    strcat(strcpy(file, getenv("HOME")), "/github/8-bit-computer/shell_in_c/bin/kernel.bin");
+    strcat(strcpy(file, getenv("HOME")), "/github/8-bit-computer/scheduler/bin/scheduler.bin");
     //strcat(strcpy(file, getenv("HOME")), "/github/8-bit-computer/wozmon");
     LoadFromFile(rom, file);
 

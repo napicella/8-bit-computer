@@ -33,7 +33,7 @@ run: $(TARGET)
 	LD_LIBRARY_PATH=$(LD_PATH) $(TARGET) > /dev/null
 
 run-log: $(TARGET)
-	LD_LIBRARY_PATH=../modules/vrEmu6502/bin/src:$(LD_LIBRARY_PATH) $(TARGET)
+	LD_LIBRARY_PATH=$(LD_PATH) $(TARGET)
 
 # Phony target to prevent conflicts with files named "clean"
 .PHONY: clean
