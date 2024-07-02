@@ -6,6 +6,7 @@
 #include "bus.h"
 #include "devices.h"
 #include "vremu6502_wrapper.h"
+#include "vremu6522_wrapper.h"
 
 Bus* bus;
 
@@ -19,17 +20,19 @@ void My6502MemoryWriteFunction(uint16_t addr, uint8_t val) {
 
 /* fill rom with something that makes sense here */
 int main() {
-  bus = (Bus*) malloc(sizeof(Bus));
+  bus = (Bus*)malloc(sizeof(Bus));
   bus->ram = CreateRam();
   bus->rom = CreateRom();
   bus->spy = CreateSpy();
   bus->um245 = CreateUm245();
   bus->via = Create6522();
 
-
   // /* create a new WDC 65C02. */
   VrEmu6502* my6502 = vrEmu6502New(CPU_W65C02, My6502MemoryReadFunction,
                                    My6502MemoryWriteFunction);
+
+  vrEmu6522Interrupt viaIntSignalPrev = vrEmu6522_IntCleared;
+  vrEmu6522Interrupt viaIntSignal = vrEmu6522_IntCleared;
 
   if (my6502) {
     /* if you want to interrupt the CPU, get a handle to its IRQ "pin" */
@@ -46,6 +49,17 @@ int main() {
       // printf("%s\n", vrEmu6502OpcodeToMnemonicStr(my6502, opCode));
       vrEmu6502Tick(my6502);
       vrEmu6522Tick(bus->via);
+
+      viaIntSignalPrev = viaIntSignal;
+      viaIntSignal = *(vrEmu6522Int(bus->via));
+      if (viaIntSignalPrev != viaIntSignal) {
+        printf("here\n");
+      }
+  
+      if (viaIntSignal == vrEmu6522_IntLow) {
+        printf("here\n");
+        // *viaIntSignal = vrEmu6522_IntCleared;
+      }
 
       uint8_t op = vrEmu6502GetCurrentOpcode(my6502);
       const char* opString = vrEmu6502OpcodeToMnemonicStr(my6502, op);

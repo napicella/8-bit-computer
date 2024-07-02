@@ -4,6 +4,7 @@
         "vremu6502.h": "c",
         "devices.h": "c",
         "bus.h": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "vremu6502_wrapper.h": "c"
     }
 }

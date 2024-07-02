@@ -4,3 +4,4 @@
 .include "lcd.s"
 .include "spi.s"
 .include "io.s"
+.include "spy.s"

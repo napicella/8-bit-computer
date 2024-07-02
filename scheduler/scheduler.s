@@ -4,6 +4,7 @@
 .export _scheduler_irq
 .import _counter_init
 .import _counter_reset
+.import _spy
 
 ; reserving space for counter in the zero page
 .zeropage
@@ -26,8 +27,13 @@ _scheduler_init:
 
     ; initialize stack pointers variables
     ;   for thread 0
-    lda #$ff
-    sta ctx_switch_mem_t0 + 3
+    ;
+    ; Important - to verify
+    ; since _scheduler_init is a subroutine, we cannot just use lda #$ff, but
+    ; instead need to get the current sp
+    ; lda #$ff
+    tsx 
+    stx ctx_switch_mem_t0 + 3
     ;   for thread 1
     lda #$80
     sta ctx_switch_mem_t1 + 3
@@ -51,6 +57,8 @@ _scheduler_init:
     tsx
     stx ctx_switch_mem_t1 + 3
 
+    ldx ctx_switch_mem_t0 + 3
+    txs
     rts
 
 
