@@ -22,6 +22,18 @@ uint8_t Spy_Read(uint16_t addr, Spy *spy) {
 // Implement the Write method
 void Spy_Write(uint16_t addr, uint8_t val, Spy *spy) {
     printf("[SPY] writing addr: %04x - value %d (dec) %c (s) \n", addr, val, (char)val);
+
+    switch (val)
+    {
+    case 0x0A:
+        printf("[SPY] thread 0\n");
+        break;
+    case 0x0B:
+        printf("[SPY] thread 1\n");
+        break;
+    default:
+        break;
+    }
 }
 
 
