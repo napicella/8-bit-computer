@@ -31,7 +31,7 @@ uint8_t Bus_Read(uint16_t addr, Bus* bus) {
     return Um245_Read(addr, bus->um245);
   }
   if (between(addr, Via6522_Start(), Via6522_Length())) {
-    vrEmu6522Read(bus->via, addr & 0xFF);
+    return vrEmu6522Read(bus->via, addr & 0xFF);
   }
   fprintf(stderr, "no device associated to address %04x\n", addr);
   exit(EXIT_FAILURE);
@@ -61,6 +61,6 @@ void Bus_Write(uint16_t addr, uint8_t val, Bus* bus) {
     vrEmu6522Write(bus->via, addr & 0xFF, val);
     return;
   }
-  perror("no device associated to address");
+  fprintf(stderr, "no device associated to address %04x\n", addr);
   exit(EXIT_FAILURE);
 }

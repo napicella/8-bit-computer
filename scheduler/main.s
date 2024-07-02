@@ -1,10 +1,12 @@
 .import _counter_init
+.import _counter_reset
 .import _spy
 
 .code
 
 _main:
-   jsr _counter_init
+    cli ; enable interrupts
+    jsr _counter_init
 loop:
     jmp loop
 
@@ -13,6 +15,7 @@ nmi:
 
 irq_handler:
     jsr _spy
+    jsr _counter_reset
     rti
 
 .segment "VECTORS"

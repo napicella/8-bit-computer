@@ -31,8 +31,8 @@ int main() {
   VrEmu6502* my6502 = vrEmu6502New(CPU_W65C02, My6502MemoryReadFunction,
                                    My6502MemoryWriteFunction);
 
-  vrEmu6522Interrupt viaIntSignalPrev = vrEmu6522_IntCleared;
-  vrEmu6522Interrupt viaIntSignal = vrEmu6522_IntCleared;
+  
+  vrEmu6522Interrupt viaIntSignal;
 
   if (my6502) {
     /* if you want to interrupt the CPU, get a handle to its IRQ "pin" */
@@ -50,15 +50,9 @@ int main() {
       vrEmu6502Tick(my6502);
       vrEmu6522Tick(bus->via);
 
-      viaIntSignalPrev = viaIntSignal;
       viaIntSignal = *(vrEmu6522Int(bus->via));
-      if (viaIntSignalPrev != viaIntSignal) {
-        printf("here\n");
-      }
-  
-      if (viaIntSignal == vrEmu6522_IntLow) {
-        printf("here\n");
-        // *viaIntSignal = vrEmu6522_IntCleared;
+      if (viaIntSignal == vrEmu6522_IntRequested) {
+        *irq = vrEmu6502_IntRequested;
       }
 
       uint8_t op = vrEmu6502GetCurrentOpcode(my6502);
