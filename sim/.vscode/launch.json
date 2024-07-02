@@ -11,7 +11,7 @@
             "cwd": "${fileDirname}",
             "environment": [{
                 "name": "LD_LIBRARY_PATH",
-                "value": "${workspaceFolder}/modules/vrEmu6502/bin/src:$LD_LIBRARY_PATH"
+                "value": "${workspaceFolder}/modules/vrEmu6502/bin/src:${workspaceFolder}/modules/vrEmu6522/bin/src:$LD_LIBRARY_PATH"
             }],
             "externalConsole": false,
             "MIMode": "gdb",

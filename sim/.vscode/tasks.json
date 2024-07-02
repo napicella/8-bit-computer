@@ -8,7 +8,7 @@
             "options": {"cwd": "${workspaceFolder}/src"},
             "type": "shell",
             "command": "make",   // <-- changed
-            "args": []           // <-- changed
+            "args": ["build"]           // <-- changed
         }
     ],
     "group": {
