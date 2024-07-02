@@ -13,30 +13,31 @@ ctx_switch_mem_t0:  .res 4, $00
 ctx_switch_mem_t1:  .res 4, $00
 temp:               .res 2, $00
 
+sp_scheduler_init:  .res 1, $00
+
 .code
 
 ; routine assumes that the address of thread 1 is in register A (high byte) and X (low byte)
 _scheduler_init:
-    jsr _counter_init
     ; save the input to memory since we need the registers
     sta temp
     stx temp + 1
+
+    tsx
+    stx sp_scheduler_init
+
+    jsr _counter_init
     ; set thread 0 as running
     lda #$0
     sta thread_running
 
     ; initialize stack pointers variables
     ;   for thread 0
-    ;
-    ; Important - to verify
-    ; since _scheduler_init is a subroutine, we cannot just use lda #$ff, but
-    ; instead need to get the current sp
-    ; lda #$ff
-    tsx 
+    ldx #$ff 
     stx ctx_switch_mem_t0 + 3
     ;   for thread 1
-    lda #$80
-    sta ctx_switch_mem_t1 + 3
+    ldx #$80
+    stx ctx_switch_mem_t1 + 3
     
     ; We assume thread 0 is the first one to run.
     ; When receiving the first interrupt the scheduler assumes the stack for thread 1 is populated.
@@ -57,7 +58,7 @@ _scheduler_init:
     tsx
     stx ctx_switch_mem_t1 + 3
 
-    ldx ctx_switch_mem_t0 + 3
+    ldx sp_scheduler_init
     txs
     rts
 
@@ -88,17 +89,17 @@ switch_thread_0:
     stx ctx_switch_mem_t1 + 3
 
     ; updating the stack pointer to point to thread 0
-    lda ctx_switch_mem_t0 + 3
+    ldx ctx_switch_mem_t0 + 3
     txs
+
+    ; update the thread running
+    lda #$0
+    sta thread_running
 
     ; hydrate the registers
     lda ctx_switch_mem_t0
     ldx ctx_switch_mem_t0 + 1
     ldy ctx_switch_mem_t0 + 2
-
-    ; update the thread running
-    lda #$0
-    sta thread_running
 
     jmp exit_irq
 
@@ -112,16 +113,17 @@ switch_thread_1:
     stx ctx_switch_mem_t0 + 3
 
     ; updating the stack pointer to point to thread 1
-    lda ctx_switch_mem_t1 + 3
+    ldx ctx_switch_mem_t1 + 3
     txs
+
+    ; update the thread running
+    lda #$1
+    sta thread_running
 
     ; hydrate the registers
     lda ctx_switch_mem_t1
     ldx ctx_switch_mem_t1 + 1
     ldy ctx_switch_mem_t1 + 2
-
-    lda #$1
-    sta thread_running
 
     jmp exit_irq
 
