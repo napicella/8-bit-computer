@@ -48,7 +48,10 @@ counter_init:
   sta counter       ; initialize counter to zero
 
   lda #%01000000
-  sta VIA_ACR           ; set VIA timer T1 in continuos interrupt
+  sta VIA_ACR       ; set VIA timer T1 in continuos interrupt
+  
+  lda #%11000000
+  sta VIA_IER       ; enable interrupts on VIA
 
  ; The counter decrements at each clock cycle. When in reaches zero
  ; it interrupts and then restart the counter. Note the interrupt
