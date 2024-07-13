@@ -42,10 +42,10 @@ int main() {
   bus->um245 = CreateUm245();
   bus->via = Create6522();
 
-  VrEmu6502* my6502 = vrEmu6502New(CPU_W65C02, My6502MemoryReadFunction,
-                                   My6502MemoryWriteFunction);
+  VrEmu6502* emu6502 = vrEmu6502New(CPU_W65C02, My6502MemoryReadFunction,
+                                    My6502MemoryWriteFunction);
 
-  if (!my6502) {
+  if (!emu6502) {
     log_error("failed to create emulator");
     exit(-1);
   }
@@ -53,7 +53,7 @@ int main() {
   vrEmu6522Interrupt viaIntSignal;
 
   // to interrupt the CPU, get a handle to its IRQ "pin"
-  vrEmu6502Interrupt* irq = vrEmu6502Int(my6502);
+  vrEmu6502Interrupt* irq = vrEmu6502Int(emu6502);
   bool instructionCompleted = true;
 
   while (1) {
@@ -73,29 +73,40 @@ int main() {
      * the first tick (cycle)
      *
      */
-    vrEmu6502Tick(my6502);
+    vrEmu6502Tick(emu6502);
     vrEmu6522Tick(bus->via);
 
-    uint8_t cycle = vrEmu6502GetOpcodeCycle(my6502);
-    uint8_t op = vrEmu6502GetCurrentOpcode(my6502);
-    const char* opString = vrEmu6502OpcodeToMnemonicStr(my6502, op);
+    uint8_t cycle = vrEmu6502GetOpcodeCycle(emu6502);
+    uint8_t op = vrEmu6502GetCurrentOpcode(emu6502);
+    const char* opString = vrEmu6502OpcodeToMnemonicStr(emu6502, op);
 
     char buffer[100];
-    vrEmu6502DisassembleInstruction(my6502,
-                                    vrEmu6502GetCurrentOpcodeAddr(my6502), 100,
+    vrEmu6502DisassembleInstruction(emu6502,
+                                    vrEmu6502GetCurrentOpcodeAddr(emu6502), 100,
                                     buffer, NULL, labelMap);
 
     if (instructionCompleted) {
       log_info("[DIS] %s", buffer);
-      uint8_t accReg = vrEmu6502GetAcc(my6502);
-      uint8_t spReg = vrEmu6502GetStackPointer(my6502);
-      uint8_t xReg = vrEmu6502GetX(my6502);
-      uint8_t yReg = vrEmu6502GetY(my6502);
 
-      log_info("[A] %x", accReg);
-      log_info("[SP] %x", spReg);
-      log_info("[X] %x", xReg);
-      log_info("[Y] %x", yReg);
+      // simple debugger loop
+      uint8_t currentIndex = 0;
+      char line[64];
+      printf("> ");
+
+      while (true) {
+        char c = getchar();
+        line[currentIndex++] = c;
+        if (c == '\n') {
+          int res = scan(line, emu6502, bus);
+          currentIndex = 0;
+          memset(line, 0, 64);
+
+          if (res == 0) {
+            break;
+          }
+          printf("> ");
+        }
+      }
     }
     // instructionCompleted switch in the cycle where the CPU starts an
     // operation
@@ -114,6 +125,51 @@ int main() {
     // getchar();
   }
 
-  vrEmu6502Destroy(my6502);
+  vrEmu6502Destroy(emu6502);
   return 0;
+}
+
+// text must be a NIL terminated string
+int scan(char* text, VrEmu6502* emu6502, Bus* bus) {
+  // supported commands:
+  //
+  // print-stack
+  // peek <MEM>
+  // a
+  // x
+  // y
+  // c (continue)
+
+  if (strncmp(text, "print-stack", 11) == 0) {
+    // stack in 6502 goes from 0x01FF to 0x0100
+    for (uint8_t i = 0x1FF; i >= 0x100; i--) {
+      uint8_t data = Bus_Read(i, bus);
+      log_info("[PEEK] %x", data);
+    }
+  } else if (strncmp(text, "peek", 4) == 0) {
+    uint16_t address;
+    int scan_res = sscanf(text, "peek %hx", &address);
+    if (scan_res >= 1) {
+      uint8_t data = Bus_Read(address, bus);
+      log_info("[PEEK] %x", data);
+    }
+  } else if (strncmp(text, "sp", 2) == 0) {
+    uint8_t spReg = vrEmu6502GetStackPointer(emu6502);
+    log_info("[SP] %x", spReg);
+  } else if (strncmp(text, "a", 1) == 0) {
+    uint8_t accReg = vrEmu6502GetAcc(emu6502);
+    log_info("[A] %x", accReg);
+  } else if (strncmp(text, "x", 1) == 0) {
+    uint8_t xReg = vrEmu6502GetX(emu6502);
+    log_info("[X] %x", xReg);
+  } else if (strncmp(text, "y", 1) == 0) {
+    uint8_t yReg = vrEmu6502GetY(emu6502);
+    log_info("[Y] %x", yReg);
+  } else if (strncmp(text, "c", 1) == 0) {
+    return 0;
+  } else {
+    return -1;
+  }
+
+  return -1;
 }
