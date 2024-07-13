@@ -141,8 +141,8 @@ int scan(char* text, VrEmu6502* emu6502, Bus* bus) {
   // c (continue)
 
   if (strncmp(text, "print-stack", 11) == 0) {
-    // stack in 6502 goes from 0x01FF to 0x0100
-    for (uint8_t i = 0x1FF; i >= 0x100; i--) {
+    // stack in 6502 goes from 0x0100 to 0xFF
+    for (uint8_t i = 0x100; i >= 0xFF; i--) {
       uint8_t data = Bus_Read(i, bus);
       log_info("[PEEK] %x", data);
     }
