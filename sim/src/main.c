@@ -7,6 +7,7 @@
 #include "devices.h"
 #include "vremu6502_wrapper.h"
 #include "vremu6522_wrapper.h"
+#include "log.h"
 
 Bus* bus;
 
@@ -18,16 +19,31 @@ void My6502MemoryWriteFunction(uint16_t addr, uint8_t val) {
   Bus_Write(addr, val, bus);
 }
 
-/* fill rom with something that makes sense here */
+char* readFile(const char* filename);
+void debuggerLoadLabels(const char* labelFileContents, char* labelMap[0x10000]);
+
 int main() {
+  log_set_level(LOG_INFO);
+
+  char labelFilepath[256];
+  strcat(strcpy(labelFilepath, getenv("HOME")),
+         "/github/8-bit-computer/scheduler/bin/scheduler.lbl");
+  
+  char imageFilepath[256];
+  strcat(strcpy(imageFilepath, getenv("HOME")),
+         "/github/8-bit-computer/scheduler/bin/scheduler.bin");
+  
+  char* labelContent = readFile(labelFilepath);
+  char* labelMap[0x10000] = {NULL};
+  debuggerLoadLabels(labelContent, labelMap);
+
   bus = (Bus*)malloc(sizeof(Bus));
   bus->ram = CreateRam();
-  bus->rom = CreateRom();
+  bus->rom = CreateRom(imageFilepath);
   bus->spy = CreateSpy();
   bus->um245 = CreateUm245();
   bus->via = Create6522();
 
-  // /* create a new WDC 65C02. */
   VrEmu6502* my6502 = vrEmu6502New(CPU_W65C02, My6502MemoryReadFunction,
                                    My6502MemoryWriteFunction);
 
@@ -36,11 +52,6 @@ int main() {
   if (my6502) {
     // to interrupt the CPU, get a handle to its IRQ "pin"
     vrEmu6502Interrupt* irq = vrEmu6502Int(my6502);
-    /* reset the cpu (technically don't need to do this as vrEmu6502New does
-     * reset it) 
-     */
-    // vrEmu6502Reset(my6502);
-
     bool shouldDisplay = true;
 
     while (1) {
@@ -66,10 +77,17 @@ int main() {
       uint8_t cycle = vrEmu6502GetOpcodeCycle(my6502);
       uint8_t op = vrEmu6502GetCurrentOpcode(my6502);
       const char* opString = vrEmu6502OpcodeToMnemonicStr(my6502, op);
+
+      char buffer[100];
+      vrEmu6502DisassembleInstruction(my6502,
+                                      vrEmu6502GetCurrentOpcodeAddr(my6502),
+                                      100, buffer, NULL, labelMap);
+      
       if (shouldDisplay) {
+        log_info("[DIS] %s", buffer);
         uint8_t accRegister = vrEmu6502GetAcc(my6502);
-        printf("[OP] %s\n", opString);
-        printf("[ACC] %x\n", accRegister);
+        log_debug("[OP] %s", opString);
+        log_debug("[ACC] %x", accRegister);
       }
       // shouldDisplay switch in the cycle where the CPU starts an operation
       shouldDisplay = cycle == 0;
