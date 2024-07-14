@@ -7,8 +7,8 @@
             "label": "build",
             "options": {"cwd": "${workspaceFolder}/src"},
             "type": "shell",
-            "command": "make",   // <-- changed
-            "args": ["build"]           // <-- changed
+            "command": "make",   
+            "args": ["build"] 
         }
     ],
     "group": {

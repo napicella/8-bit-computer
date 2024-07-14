@@ -12,12 +12,12 @@ uint16_t Rom_Start() {
 
 // Implement the Length method
 uint32_t Rom_Length() {
-    return ROM_SIZE;
+    return ROM_LENGTH;
 }
 
 // Implement the Read method
 uint8_t Rom_Read(uint16_t addr, Rom *rom) {
-    uint16_t offset = addr - ROM_START_ADDR;
+    uint16_t offset = addr - ROM_SIZE;
     log_debug("[ROM] offset addr: %04x", offset);
     if (offset < ROM_SIZE) {
         uint8_t val = rom->data[offset];
@@ -44,7 +44,7 @@ void LoadFromFile(Rom *rom, const char *filepath) {
     }
 
     // Read ROM content from file into memory array
-    size_t bytesRead = fread(rom->data, sizeof(uint8_t), ROM_SIZE + 1, file);
+    size_t bytesRead = fread(rom->data, sizeof(uint8_t), ROM_SIZE, file);
     if (bytesRead != ROM_SIZE) {
         log_error("load %ld instead of %d", bytesRead, ROM_SIZE);
         perror("error reading file");

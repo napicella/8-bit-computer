@@ -3,6 +3,27 @@
 ; __VIA_START__ symbol is defined in the load.cfg
 .import __VIA_START__
 
+; exporting the VIA ports. This is not strictly necessary since
+; the assembler is able to use as along as this file is included.
+; Exporting them makes adds them in the linker label file which
+; makes debugging easier.
+.export VIA_PORTB
+.export VIA_PORTA
+.export VIA_DDRB 
+.export VIA_DDRA 
+.export VIA_T1CL 
+.export VIA_T1CH 
+.export VIA_T1LL 
+.export VIA_T1LH 
+.export VIA_T2CL 
+.export VIA_T2CH 
+.export VIA_SR   
+.export VIA_ACR  
+.export VIA_PCR  
+.export VIA_IFR  
+.export VIA_IER  
+.export VIA_PANH 
+
 ; Auxillary Control Register flags
 VIA_ACR_T1_SINGLE_NO_PB7           = %00000000
 VIA_ACR_T1_CONT_NO_PB7             = %01000000

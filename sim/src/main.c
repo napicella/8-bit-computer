@@ -87,6 +87,7 @@ int main() {
 
     if (instructionCompleted) {
       log_info("[DIS] %s", buffer);
+      printf("-------------\n");
 
       // simple debugger loop
       uint8_t currentIndex = 0;
@@ -120,9 +121,6 @@ int main() {
     if (viaIntSignal == vrEmu6522_IntRequested) {
       *irq = vrEmu6502_IntRequested;
     }
-
-    // printf("Press Any Key to Continue\n");
-    // getchar();
   }
 
   vrEmu6502Destroy(emu6502);
@@ -142,7 +140,7 @@ int scan(char* text, VrEmu6502* emu6502, Bus* bus) {
 
   if (strncmp(text, "print-stack", 11) == 0) {
     // stack in 6502 goes from 0x0100 to 0xFF
-    for (uint8_t i = 0x100; i >= 0xFF; i--) {
+    for (uint16_t i = 0x100; i >= 0xFF; i--) {
       uint8_t data = Bus_Read(i, bus);
       log_info("[PEEK] %x", data);
     }
