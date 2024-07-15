@@ -11,7 +11,8 @@
 #include "vremu6522_wrapper.h"
 
 Bus* bus;
-bool stepDebuggerEnabled = false;
+bool stepDebuggerEnabled = true;
+int logLevel = LOG_INFO;
 
 uint8_t My6502MemoryReadFunction(uint16_t addr, bool isDbg) {
   return Bus_Read(addr, bus);
@@ -22,7 +23,7 @@ void My6502MemoryWriteFunction(uint16_t addr, uint8_t val) {
 }
 
 int main() {
-  log_set_level(LOG_FATAL);
+  log_set_level(logLevel);
 
   char labelFilepath[256];
   strcat(strcpy(labelFilepath, getenv("HOME")),

@@ -29,3 +29,6 @@ build-simple:
 	  -o $(BUILD_DIR)/scheduler.bin \
 	  $(BUILD_DIR)/bios.o \
 	  $(BUILD_DIR)/main.o
+
+install:
+	minipro -p AT28C256 -uP -w $(BUILD_DIR)/scheduler.bin
