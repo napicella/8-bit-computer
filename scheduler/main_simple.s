@@ -1,13 +1,31 @@
+.import _counter_init
+.import _spy
+.import VIA_T1CL
+
 .code
-
+; the routine executed when the processor boots
 _main:
-    lda #$FF
-    jmp hello
+    ; disable interrupt during init
+    sei
+    jsr _counter_init
+    ; reenable interrupts
+    cli
 
-hello:
-    lda #$BB
+thread_0:
+    lda #$0a
+    jsr _spy
+    jmp thread_0
+
+
+nmi:
+    rti
+
+_handle_irq:
+    nop
+    lda VIA_T1CL
+    rti
 
 .segment "VECTORS"
-    .addr      $00               ; NMI vector
+    .addr      nmi               ; NMI vector
     .addr      _main             ; Reset vector
-    .addr      $00             ; IRQ/BRK vector
+    .addr      _handle_irq       ; IRQ/BRK vector

@@ -17,6 +17,17 @@ sp_scheduler_init:  .res 1, $00
 
 .code
 
+; defining the symbols makes it easier to debug
+ctx_switch_mem_t0_0: .addr ctx_switch_mem_t0
+ctx_switch_mem_t0_1: .addr ctx_switch_mem_t0 + 1
+ctx_switch_mem_t0_2: .addr ctx_switch_mem_t0 + 2
+ctx_switch_mem_t0_3: .addr ctx_switch_mem_t0 + 3
+
+ctx_switch_mem_t1_0: .addr ctx_switch_mem_t1
+ctx_switch_mem_t1_1: .addr ctx_switch_mem_t1 + 1
+ctx_switch_mem_t1_2: .addr ctx_switch_mem_t1 + 2
+ctx_switch_mem_t1_3: .addr ctx_switch_mem_t1 + 3
+
 ; routine assumes that the address of thread 1 is in register A (high byte) and X (low byte)
 _scheduler_init:
     ; save the input to memory since we need the registers
@@ -25,11 +36,6 @@ _scheduler_init:
 
     tsx
     stx sp_scheduler_init
-
-    jsr _counter_init
-    ; set thread 0 as running
-    lda #$0
-    sta thread_running
 
     ; initialize stack pointers variables
     ;   for thread 0
@@ -47,19 +53,36 @@ _scheduler_init:
     ldx ctx_switch_mem_t1 + 3
     txs
 
-    ; store the address and the cpu status
+    ; store the address and the cpu status flags
+    ;
+    ; address
     lda temp
     pha 
     lda temp + 1
     pha 
-    php
+    ;
+    ; cpu status flags
+    ; Note that we set it to all zero. It's particularly
+    ; important that the Interrupt inhibit (third bit, LS) is
+    ; zero, otherwise theread 1 would start with interrupts
+    ; disabled
+    lda #$0
+    pha
 
     ; store the update stack pointer in memory
     tsx
     stx ctx_switch_mem_t1 + 3
 
+    ; reset stack pointer
     ldx sp_scheduler_init
     txs
+
+    ; init counter
+    jsr _counter_init
+    ; set thread 0 as running
+    lda #$0
+    sta thread_running
+
     rts
 
 
@@ -101,7 +124,8 @@ switch_thread_0:
     ldx ctx_switch_mem_t0 + 1
     ldy ctx_switch_mem_t0 + 2
 
-    jmp exit_irq
+    ; rti also re-enables interrupts
+    rti
 
 
 switch_thread_1:
@@ -124,10 +148,10 @@ switch_thread_1:
     lda ctx_switch_mem_t1
     ldx ctx_switch_mem_t1 + 1
     ldy ctx_switch_mem_t1 + 2
-
-    jmp exit_irq
+    
+    ; rti also re-enables interrupts
+    rti
 
 exit_irq:
-    ; re-enable interrupts
-    cli
+    ; rti also re-enables interrupts
     rti

@@ -17,21 +17,21 @@ _main:
     lda #((thread_1 >> 8) & 255)
 	ldx #(thread_1 & 255)
     jsr _scheduler_init
-    
+
     ; reenable interrupts
     cli
 
 thread_0:
-    lda #(<thread_0_string)
-	ldx #(>thread_0_string)
+    ; lda #(<thread_0_string)
+	; ldx #(>thread_0_string)
     ; jsr _serial_writeline
     lda #$0a
     jsr _spy
     jmp thread_0
 
 thread_1:
-    lda #(<thread_1_string)
-	ldx #(>thread_1_string)
+    ; lda #(<thread_1_string)
+	; ldx #(>thread_1_string)
     ; jsr _serial_writeline
     lda #$0b
     jsr _spy

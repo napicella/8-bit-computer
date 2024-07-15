@@ -6,6 +6,7 @@
         "bus.h": "c",
         "sstream": "c",
         "vremu6502_wrapper.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "random": "c"
     }
 }

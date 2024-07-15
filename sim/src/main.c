@@ -11,6 +11,7 @@
 #include "vremu6522_wrapper.h"
 
 Bus* bus;
+bool stepDebuggerEnabled = false;
 
 uint8_t My6502MemoryReadFunction(uint16_t addr, bool isDbg) {
   return Bus_Read(addr, bus);
@@ -21,7 +22,7 @@ void My6502MemoryWriteFunction(uint16_t addr, uint8_t val) {
 }
 
 int main() {
-  log_set_level(LOG_INFO);
+  log_set_level(LOG_FATAL);
 
   char labelFilepath[256];
   strcat(strcpy(labelFilepath, getenv("HOME")),
@@ -53,7 +54,7 @@ int main() {
   vrEmu6522Interrupt viaIntSignal;
 
   // to interrupt the CPU, get a handle to its IRQ "pin"
-  vrEmu6502Interrupt* irq = vrEmu6502Int(emu6502);
+  vrEmu6502Interrupt* irq;
   bool instructionCompleted = true;
 
   while (1) {
@@ -86,26 +87,28 @@ int main() {
                                     buffer, NULL, labelMap);
 
     if (instructionCompleted) {
-      log_info("[DIS] %s", buffer);
-      printf("-------------\n");
+      log_info("[DIS] %s\n-------------\n", buffer);
 
-      // simple debugger loop
-      uint8_t currentIndex = 0;
-      char line[64];
-      printf("> ");
+      if (strcmp(opString, "nop") == 0 || stepDebuggerEnabled) {
+        stepDebuggerEnabled = true;
+        // simple debugger loop
+        uint8_t currentIndex = 0;
+        char line[64];
+        printf("> ");
 
-      while (true) {
-        char c = getchar();
-        line[currentIndex++] = c;
-        if (c == '\n') {
-          int res = scan(line, emu6502, bus);
-          currentIndex = 0;
-          memset(line, 0, 64);
+        while (true) {
+          char c = getchar();
+          line[currentIndex++] = c;
+          if (c == '\n') {
+            int res = scan(line, emu6502, bus);
+            currentIndex = 0;
+            memset(line, 0, 64);
 
-          if (res == 0) {
-            break;
+            if (res == 0) {
+              break;
+            }
+            printf("> ");
           }
-          printf("> ");
         }
       }
     }
@@ -117,9 +120,12 @@ int main() {
       break;
     }
 
+    irq = vrEmu6502Int(emu6502);
     viaIntSignal = *(vrEmu6522Int(bus->via));
     if (viaIntSignal == vrEmu6522_IntRequested) {
       *irq = vrEmu6502_IntRequested;
+    } else if(viaIntSignal == vrEmu6522_IntCleared) {
+      *irq = vrEmu6502_IntCleared;
     }
   }
 
@@ -137,12 +143,13 @@ int scan(char* text, VrEmu6502* emu6502, Bus* bus) {
   // x
   // y
   // c (continue)
+  // r (resume)
 
   if (strncmp(text, "print-stack", 11) == 0) {
     // stack in 6502 goes from 0x0100 to 0xFF
-    for (uint16_t i = 0x100; i >= 0xFF; i--) {
+    for (uint16_t i = 0x1FF; i >= 0x100; i--) {
       uint8_t data = Bus_Read(i, bus);
-      log_info("[PEEK] %x", data);
+      log_info("[S] [%x] %x", i, data);
     }
   } else if (strncmp(text, "peek", 4) == 0) {
     uint16_t address;
@@ -151,9 +158,22 @@ int scan(char* text, VrEmu6502* emu6502, Bus* bus) {
       uint8_t data = Bus_Read(address, bus);
       log_info("[PEEK] %x", data);
     }
+  } else if (strncmp(text, "status", 6) == 0) {
+    uint8_t intMask = 0x01 << BitI;
+    uint8_t spReg = vrEmu6502GetStatus(emu6502);
+    if (spReg & intMask) {
+      printf("Interrupts disabled\n");
+    } else {
+      printf("Interrupts enabled\n");
+    }
+    
+    // Carry bit (C) is the LSB in the spReg
+    // const char* status[] = {"N", "V", "-", "B", "D", "I - IRQ disable", "Z", "C"};
   } else if (strncmp(text, "sp", 2) == 0) {
     uint8_t spReg = vrEmu6502GetStackPointer(emu6502);
-    log_info("[SP] %x", spReg);
+    uint8_t data = Bus_Read(0x100 + spReg + 1, bus);
+    log_info("[SP] %x", 0x100 + spReg);
+    log_info("[PEEK] %b", data);
   } else if (strncmp(text, "a", 1) == 0) {
     uint8_t accReg = vrEmu6502GetAcc(emu6502);
     log_info("[A] %x", accReg);
@@ -164,6 +184,9 @@ int scan(char* text, VrEmu6502* emu6502, Bus* bus) {
     uint8_t yReg = vrEmu6502GetY(emu6502);
     log_info("[Y] %x", yReg);
   } else if (strncmp(text, "c", 1) == 0) {
+    return 0;
+  } else if (strncmp(text, "r", 1) == 0) {
+    stepDebuggerEnabled = false;
     return 0;
   } else {
     return -1;

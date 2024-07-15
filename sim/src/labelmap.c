@@ -18,22 +18,18 @@ void debuggerLoadLabels(const char *labelFileContents,
   char al[2];
   // loop through each line
   while (line != NULL) {
-    uint16_t* address = (uint16_t*)malloc(sizeof(uint16_t));
+    uint16_t *address = (uint16_t *)malloc(sizeof(uint16_t));
     char *label = (char *)malloc(50 * sizeof(char));
 
     sscanf(line, "%s %x %s", al, address, label);
-    labelMap[*address] = label;
+    if (strncmp(label, "__", 2) != 0) {
+      // if the label starts with `__`, do not use it
+      labelMap[*address] = label;
+    }
 
     // get the next line
     line = strtok(NULL, "\n");
   }
-
-  for (int i = 0; i < 100; i++) {
-    if (labelMap[i] != NULL) {
-      printf("%s\n", labelMap[i]);
-    }
-  }
-  printf("done\n");
 }
 
 char *readFile(const char *filename) {
