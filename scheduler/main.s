@@ -5,17 +5,15 @@
 .import _scheduler_init
 .import _spy
 
-.data
-thread_0_string: .asciiz "Thread 0!"
-thread_1_string: .asciiz "Thread 1!"
+.code
+ thread_0_string: .byte "Thread 0!", $0D, $0A, $00
+ thread_1_string: .byte "Thread 1!", $0D, $0A, $00
+ 
 
 .code
 ; the routine executed when the processor boots
 _main:
     jsr _serial_init
-
-    lda #$41
-    jsr _serial_writebyte
     
     ; disable interrupt during init
     sei
@@ -29,48 +27,40 @@ _main:
     cli
 
 thread_0:
-    ; lda #(<thread_0_string)
-	; ldx #(>thread_0_string)
-    ; TODO: looks like _serial_writeline does not work.
-    ; It's weird because the same function is used in the 
-    ; shell project - but there the C runtime calls it
-    ;
-    ; jsr _serial_writeline
-    lda #$41
-    jsr _serial_writebyte
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
+    ; NOTE: _serial_writeline works correctly if the
+    ; messages to print are in the code section. The 
+    ; data segment needs to be understood better in 
+    ; the load.cfg - I have never got how load from 
+    ; ROM and run from RAM actually works
 
-    ;lda #$0a
-    ;jsr _spy
+    lda #(<thread_0_string)
+	ldx #(>thread_0_string)
+
+    ; create a critical section (ie non-interruptable)
+    ; around the _serial_writeline. This is achieved by
+    ; disabling interrupts and enabling it after.
+    sei
+    jsr _serial_writeline
+    cli
+
+    jsr busy_loop
+    jsr busy_loop
+    jsr busy_loop
+    jsr busy_loop
     jmp thread_0
 
 thread_1:
-    ; lda #(<thread_1_string)
-	; ldx #(>thread_1_string)
-    ; jsr _serial_writeline
-    lda #$42
-    jsr _serial_writebyte
+    lda #(<thread_1_string)
+	ldx #(>thread_1_string)
+
+    sei
+    jsr _serial_writeline
+    cli
+
     jsr busy_loop
     jsr busy_loop
     jsr busy_loop
     jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    jsr busy_loop
-    ;lda #$0b
-    ;jsr _spy
     jmp thread_1
 
 busy_loop:

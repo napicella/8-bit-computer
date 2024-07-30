@@ -1,28 +1,25 @@
-.import _counter_init
-.import _spy
-.import VIA_T1CL
+.import _serial_init
+.import _serial_writeline
 
 .code
+message: .asciiz "Hello mom!"
 ; the routine executed when the processor boots
 _main:
-    ; disable interrupt during init
-    sei
-    jsr _counter_init
-    ; reenable interrupts
-    cli
+    jsr _serial_init
 
 thread_0:
-    lda #$0a
-    jsr _spy
-    jmp thread_0
+    lda #(<message)
+	ldx #(>message)
+    jsr _serial_writeline
+    
+loop: 
+    jmp loop
 
 
 nmi:
     rti
 
 _handle_irq:
-    nop
-    lda VIA_T1CL
     rti
 
 .segment "VECTORS"

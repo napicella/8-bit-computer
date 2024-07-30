@@ -20,6 +20,7 @@ build:
 
 build-simple:
 	mkdir -p $(BUILD_DIR)
+	rm -f $(BUILD_DIR)/*
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/bios.o bios.s
 	ca65 --cpu 65sc02 -g -o $(BUILD_DIR)/main.o main_simple.s
 	ld65 -C load.cfg \
