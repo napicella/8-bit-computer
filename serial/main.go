@@ -53,7 +53,7 @@ func main() {
 
 	s, err := getDevice()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed getting device %s", err)
 	}
 	c, err := getConsole()
 	if err != nil {
@@ -65,8 +65,11 @@ func main() {
 	}()
 
 	go func() {
-		defer close(doneChan)
-		defer s.Close()
+		defer func() {
+			close(doneChan)
+			s.Close()
+		}()
+
 		run(s)
 	}()
 
@@ -126,8 +129,7 @@ func getConsole() (c console.Console, err error) {
 }
 
 func run(s ReaderWriter) {
-	logger, logClose := setupLogs()
-	defer logClose()
+	logger, _ := setupLogs()
 	disk, err := newDisk(logger)
 	defer disk.close()
 	if err != nil {
@@ -152,7 +154,7 @@ func run(s ReaderWriter) {
 				}
 				b, err := tokz.data()
 				if err != nil {
-					log.Fatal(err)
+					log.Fatalf("tokenizer error %s", err)
 				}
 				for _, v := range b {
 					fmt.Printf("%s", string(v))
@@ -169,15 +171,18 @@ func run(s ReaderWriter) {
 			return
 		}
 		err = f()
-		portError, isPortError := err.(*serial.PortError)
-		if isPortError && portError.Code() == serial.PortClosed {
-			fmt.Println("port closed")
+		if err != nil {
+			portError, isPortError := err.(*serial.PortError)
 
-			// free device and attempt to reconnect
-			s.Close()
-			continue
+			if err == io.EOF || (isPortError && portError.Code() == serial.PortClosed) {
+				fmt.Println("port closed")
+
+				// free device and attempt to reconnect
+				s.Close()
+				continue
+			}
+			fmt.Println(err)
 		}
-		fmt.Println(err)
 		return
 	}
 }
@@ -212,7 +217,6 @@ func handleToken(tok token, disk *disk, s ReaderWriter, logFile *os.File) {
 			panic(err)
 		}
 		_, err = s.Write(d)
-		time.Sleep(time.Millisecond)
 		if err != nil {
 			panic(err)
 		}

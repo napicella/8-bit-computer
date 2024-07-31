@@ -65,11 +65,18 @@ typedef struct {
 } CmdBuffer;
 
 typedef struct {
+  VrEmu6522* via;
+  int prevState;
+  int state;
+
+  uint8_t inBuf;
+  uint8_t outBuf;
+
   int outFd;
   int inFd;
 } Um245;
 
-Um245* CreateUm245();
+Um245* CreateUm245(VrEmu6522* via);
 uint16_t Um245_Start();
 uint32_t Um245_Length();
 uint8_t Um245_Read(uint16_t addr, Um245 *spy);

@@ -28,9 +28,9 @@ uint8_t Bus_Read(uint16_t addr, Bus* bus) {
   if (between(addr, Spy_Start(), Spy_Length())) {
     return Spy_Read(addr, bus->spy);
   }
-  // if (between(addr, Um245_Start(), Um245_Length())) {
-  //   return Um245_Read(addr, bus->um245);
-  // }
+  if (between(addr, Um245_Start(), Um245_Length())) {
+    return Um245_Read(addr, bus->um245);
+  }
   if (between(addr, Via6522_Start(), Via6522_Length())) {
     return vrEmu6522Read(bus->via, addr & 0xFF);
   }
@@ -55,10 +55,10 @@ void Bus_Write(uint16_t addr, uint8_t val, Bus* bus) {
     Spy_Write(addr, val, bus->spy);
     return;
   }
-  // if (between(addr, Um245_Start(), Um245_Length())) {
-  //   Um245_Write(addr, val, bus->um245);
-  //   return;
-  // }
+  if (between(addr, Um245_Start(), Um245_Length())) {
+    Um245_Write(addr, val, bus->um245);
+    return;
+  }
   if (between(addr, Via6522_Start(), Via6522_Length())) {
     vrEmu6522Write(bus->via, addr & 0xFF, val);
     return;

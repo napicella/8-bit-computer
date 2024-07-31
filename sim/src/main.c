@@ -11,7 +11,7 @@
 #include "vremu6522_wrapper.h"
 
 Bus* bus;
-bool stepDebuggerEnabled = true;
+bool stepDebuggerEnabled = false;
 int logLevel = LOG_INFO;
 
 uint8_t My6502MemoryReadFunction(uint16_t addr, bool isDbg) {
@@ -41,8 +41,9 @@ int main() {
   bus->ram = CreateRam();
   bus->rom = CreateRom(imageFilepath);
   bus->spy = CreateSpy();
-  bus->um245 = CreateUm245();
   bus->via = Create6522();
+  bus->um245 = CreateUm245(bus->via);
+  
 
   VrEmu6502* emu6502 = vrEmu6502New(CPU_W65C02, My6502MemoryReadFunction,
                                     My6502MemoryWriteFunction);
