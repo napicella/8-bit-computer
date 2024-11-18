@@ -41,7 +41,8 @@
         "vremu6502.h": "c",
         "devices.h": "c",
         "bus.h": "c",
-        "device.h": "c"
+        "device.h": "c",
+        "vremu6522.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled",
     "cmake.configureOnOpen": false,
